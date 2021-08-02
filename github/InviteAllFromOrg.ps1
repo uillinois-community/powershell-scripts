@@ -7,7 +7,7 @@
 
 
   ## step 1: get the users in source org, and each team name they're on in source org
-  $source_mapping = Get-GitHubOrg-UserLogins-TeamNames -GitHubOrgName UIUCLibrary
+  $source_mapping = Get-GitHubOrg-UserInfos -GitHubOrgName $soruce_org
 
   # step 2: get a list of existing users already present in target org, filter out source list so 
   #   we don't re-add those people (TODO - maybe it so that they get added to groups if need be)
@@ -19,15 +19,29 @@
   foreach( $invite_login in $need_to_invite ) {
     $user_team_ids = $source_mapping[ $invite_login ] | Where { $team_id_lookup.ContainsKey( $_ )  } | %{ $team_id_lookup[ $_ ] }
 
+    
+   # manually adding jason in 
+   $hashBody = @{
+ #   'invitee_id' = $inv
+#    'team_ids'  = ,4662866
+   }
+
+   $params = @{
+     'Method' = 'Post'
+     'UriFragment' =  "orgs/uiuclib-repo-archive/invitations" 
+     'Body' = (ConvertTo-Json -InputObject $hashBody)  
+   }
+
+   #$invite_results = Invoke-GHRestMethod @params
 
 
-    Write-Output "Would request to invite user $invite_login to $target_org with $user_team_ids "
+   Write-Output "Would request to invite user $invite_login to $target_org with $user_team_ids "
 
     
   } 
 }
 
-function Get-GitHubOrg-UserLogins-TeamNames {
+function Get-GitHubOrg-UserInfos {
 
   param(
    [Parameter(Mandatory=$true)]
