@@ -38,14 +38,19 @@
 
    if( [bool]($invitee.PSobject.Properties.name -eq "TeamNames") ) {
      # TODO: Experiment with if team mapping not found...should at least warn
-     $hashBody['team_ids'] = $invitee.TeamNames | %{ $target_org_team_ids[ $_ ] }
+     
+     # tried to be clever wtth a %{}, but it's not working well when there's just one element
+     
+     $hashBody['team_ids'] = @($invitee.TeamNames | %{ $target_org_team_ids[ $_ ] })
 
    }
+
+   $body = (ConvertTo-Json -InputObject $hashBody)
 
    $params = @{
      'Method' = 'Post'
      'UriFragment' =  "orgs/uiuclib-repo-archive/invitations" 
-     'Body' = (ConvertTo-Json -InputObject $hashBody)  
+     'Body' =  $body  
    }
 
    #$invite_results = Invoke-GHRestMethod @params
