@@ -1,29 +1,45 @@
 ﻿function run {
 
   ##Set-GitHubAuthentication -SessionOnly
-  
-  $source_org = Read-Host "Organization Name to use to create invitee list "
-  $target_org = Read-Host "Organization Name to send out invites "
 
+  param(
+   [string]$GitHubSourceOrgName,
+   [string]$GitHubTargetOrgName 
+    
+  )
+
+
+  if( -not $PSBoundParameters.ContainsKey("GitHubSourceOrgName") ) {
+    $GitHubSourceOrgName = Read-Host "Organization Name to use to create invitee list "
+  }
+
+  if( -not $PSBoundParameters.ContainsKey("GitHubTargetOrgName") ) {
+    $GitHubTargetOrgName = Read-Host "Organization Name to send out invites "
+  }
+
+  $target_org_team_ids = Get-GitHubOrg-TeamName-To-TeamId -GitHubOrgName $GitHubTargetOrgName
 
   ## step 1: get the users in source org, and each team name they're on in source org
-  $source_mapping = Get-GitHubOrg-UserInfos -GitHubOrgName $soruce_org
+  $source_users = Get-GitHubOrg-UserInfos -GitHubOrgName $GitHubSourceOrgName
 
   # step 2: get a list of existing users already present in target org, filter out source list so 
   #   we don't re-add those people (TODO - maybe it so that they get added to groups if need be)
 
-  $target_org_members = Get-GitHubOrganizationMember -OrganizationName $target_org | Select -ExpandProperty login
-  $need_to_invite = $source_mapping.keys | where { -not ($target_org_members -contains $_) }
+  $GitHubTargetOrgName_members_login = Get-GitHubOrganizationMember -OrganizationName $GitHubTargetOrgName | Select -ExpandProperty login
+  $need_to_invite = $source_users  | where { -not ($GitHubTargetOrgName_members -contains $_.login) }
 
   # step 4: loop over still not present people, invite them using the proper tem ids
-  foreach( $invite_login in $need_to_invite ) {
-    $user_team_ids = $source_mapping[ $invite_login ] | Where { $team_id_lookup.ContainsKey( $_ )  } | %{ $team_id_lookup[ $_ ] }
+  foreach( $invitee in $need_to_invite ) {
 
-    
    # manually adding jason in 
    $hashBody = @{
- #   'invitee_id' = $inv
-#    'team_ids'  = ,4662866
+     'invitee_id' = $invitee.id
+   }
+
+   if( [bool]($invitee.PSobject.Properties.name -eq "TeamNames") ) {
+     # TODO: Experiment with if team mapping not found...should at least warn
+     $hashBody['team_ids'] = $invitee.TeamNames | %{ $target_org_team_ids[ $_ ] }
+
    }
 
    $params = @{
@@ -33,9 +49,10 @@
    }
 
    #$invite_results = Invoke-GHRestMethod @params
+   
 
-
-   Write-Output "Would request to invite user $invite_login to $target_org with $user_team_ids "
+   Write-Output "Would request to invite user $( $invitee.login)  ($($invitee.id)) with..."
+   Write-Output $params["Body"] 
 
     
   } 
@@ -48,15 +65,20 @@ function Get-GitHubOrg-UserInfos {
    $GitHubOrgName 
   )
 
+  $users = @()
 
+
+  #TODO: make this a parameter
   $filter_out_teams = ,"Core"
 
-  $source_org_members = Get-GitHubOrganizationMember -OrganizationName $GitHubOrgName
-  $teams = Get-GitHubTeam -OrganizationName $GitHubOrgName
+
   $member_is_part_of = @{}
 
+  $GitHubSourceOrgName_members = Get-GitHubOrganizationMember -OrganizationName $GitHubOrgName
+  $teams = Get-GitHubTeam -OrganizationName $GitHubOrgName
+
   foreach($team in ( $teams | where { -not ($filter_out_teams -contains $_.name) } ) ) { 
-    $team_members = Get-GitHubTeamMember -Organization $source_org -TeamName $team.name
+    $team_members = Get-GitHubTeamMember -Organization $GitHubSourceOrgName -TeamName $team.name
    
     foreach( $team_member in $team_members ) {
       if( $member_is_part_of.ContainsKey( $team_member.login ) ){
@@ -70,7 +92,15 @@ function Get-GitHubOrg-UserInfos {
     }
   }
 
-  return $member_is_part_of
+  $GitHubSourceOrgName_members | %{
+    if( $member_is_part_of.ContainsKey( $_.login) ) {
+      Add-Member -InputObject $_ -NotePropertyName TeamNames -NotePropertyValue $member_is_part_of[ $_.login ]
+    }
+  }
+
+
+
+  return $GitHubSourceOrgName_members
 }
 
 
