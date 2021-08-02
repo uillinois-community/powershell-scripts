@@ -1,46 +1,31 @@
-﻿
-#$source_org = Read-Host "Organization Name to use to create invitee list "
-#$target_org = Read-Host "Organization Name to send out invites "
+﻿function run {
 
-##Set-GitHubAuthentication -SessionOnly
-
-## step 1: get the users in source org, and each team name they're on in source org
-#$source_mapping = Get-GitHubOrg-UserLogins-TeamNames -GitHubOrgName UIUCLibrary
-
-# step 2: get a list of existing users already present in target org, filter out source list so 
-#   we don't re-add those people (TODO - maybe it so that they get added to groups if need be)
-
-#$target_org_members = Get-GitHubOrganizationMember -OrganizationName $target_org | Select -ExpandProperty login
-#$need_to_invite = $source_org_members | where { -not ($already_present -contains $_.login) }
+  ##Set-GitHubAuthentication -SessionOnly
+  
+  $source_org = Read-Host "Organization Name to use to create invitee list "
+  $target_org = Read-Host "Organization Name to send out invites "
 
 
-# step 3: map the used teams in source to target org, warn if not present and remove/ignore those later
+  ## step 1: get the users in source org, and each team name they're on in source org
+  $source_mapping = Get-GitHubOrg-UserLogins-TeamNames -GitHubOrgName UIUCLibrary
+
+  # step 2: get a list of existing users already present in target org, filter out source list so 
+  #   we don't re-add those people (TODO - maybe it so that they get added to groups if need be)
+
+  $target_org_members = Get-GitHubOrganizationMember -OrganizationName $target_org | Select -ExpandProperty login
+  $need_to_invite = $source_mapping.keys | where { -not ($target_org_members -contains $_) }
+
+  # step 4: loop over still not present people, invite them using the proper tem ids
+  foreach( $invite_login in $need_to_invite ) {
+    $user_team_ids = $source_mapping[ $invite_login ] | Where { $team_id_lookup.ContainsKey( $_ )  } | %{ $team_id_lookup[ $_ ] }
 
 
-# step 4: loop over still not present people, invite them using the proper tem ids
 
+    Write-Output "Would request to invite user $invite_login to $target_org with $user_team_ids "
 
-
-
-#Write-Output $need_to_invite
-
-#foreach( $invite in $need_to_invite ) {
     
-    # so... invitations is not yet implemented in module...
-    # but might be able to reverse-engineer or partiall implement
-    # by seeing other code and adding https://docs.github.com/en/rest/reference/orgs#create-an-organization-invitation
-    #
-    #
-
-#    $login = $invite.login
-
-#    Write-Output "Invites not yet implemented, but would try something like ${invite.login}"
-#}
-
-
-#function Get-Team-Name-And-Ids {
-#}
-
+  } 
+}
 
 function Get-GitHubOrg-UserLogins-TeamNames {
 
@@ -77,7 +62,7 @@ function Get-GitHubOrg-UserLogins-TeamNames {
 
 # we could be in trouble if there's two teams w/ same name but different ids...
 # should probably check and error 
-function Get-GitHub-Org-Name-To_id {
+function Get-GitHubOrg-TeamName-To-TeamId {
 
   param(
    [Parameter(Mandatory=$true)]
@@ -88,9 +73,9 @@ function Get-GitHub-Org-Name-To_id {
 
   $teams = Get-GitHubTeam -OrganizationName $GitHubOrgName
 
-  foreach( $team in $teams ) {
-    if( $team_ids.ContainsKey( $team.name ) ){
-      throw "There was more than one $team.name in $GitHubOrgName"
+  foreach( $team in $teams ) { 
+    if( $team_ids.ContainsKey( $team.name ) ) {
+      throw "There was more than one ${team.name} in ${GitHubOrgName}"
     }
     else {
       $team_ids[$team.name] = $team.id
