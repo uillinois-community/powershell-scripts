@@ -4,7 +4,10 @@
 
   param(
    [string]$GitHubSourceOrgName,
-   [string]$GitHubTargetOrgName 
+   [string]$GitHubTargetOrgName,
+   [switch]$DryRun = $false,
+   [int]$SecondsPauseBetweenRequests = 1,
+   [string[]]$SkipLogins = @()
     
   )
 
@@ -25,8 +28,8 @@
   # step 2: get a list of existing users already present in target org, filter out source list so 
   #   we don't re-add those people (TODO - maybe it so that they get added to groups if need be)
 
-  $GitHubTargetOrgName_members_login = Get-GitHubOrganizationMember -OrganizationName $GitHubTargetOrgName | Select -ExpandProperty login
-  $need_to_invite = $source_users  | where { -not ($GitHubTargetOrgName_members -contains $_.login) }
+  $GitHubTargetOrgName_login = Get-GitHubOrganizationMember -OrganizationName $GitHubTargetOrgName | Select -ExpandProperty login
+  $need_to_invite = $source_users  | where { -not ($GitHubTargetOrgName_login -contains $_.login) } | where { -not ($SkipLogins -contains $_.login) }
 
   # step 4: loop over still not present people, invite them using the proper tem ids
   foreach( $invitee in $need_to_invite ) {
@@ -53,12 +56,20 @@
      'Body' =  $body  
    }
 
-   #$invite_results = Invoke-GHRestMethod @params
-   
-
-   Write-Output "Would request to invite user $( $invitee.login)  ($($invitee.id)) with..."
-   Write-Output $params["Body"] 
-
+   if( -not $DryRun ) {
+     try {
+       $invite_results = Invoke-GHRestMethod @params
+       Write-Output $invite_results
+     }
+     catch {
+      Write-Output "Request failed on $($invitee.login): $PSItem" 
+     }
+   }
+   else {
+     Write-Output "Would request to invite user $( $invitee.login)  ($($invitee.id)) with..."
+     Write-Output $params["Body"] 
+   }
+   Start-Sleep -s $SecondsPauseBetweenRequests
     
   } 
 }
