@@ -1,2 +1,2 @@
-# IMS-github-powershell-scripts
-a collection of possibly useful powershell scripts
+# powershell-scripts
+a collection of useful powershell scripts used by Library IT at University of Illinois at Urbana-Champaign
