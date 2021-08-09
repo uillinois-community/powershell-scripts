@@ -28,14 +28,13 @@
 
 
 
-function Find-Local-Repository-Directories {
+function Find-LocalRepositoryDirectories {
 
   param(
-      [Parameter(Mandatory=$true)]
-    $StartingPath
+    $StartingPath = "."
   )
 
-  return (Get-ChildItem source -Recurse -Directory -Attributes Hidden,!Hidden | Where-Object { $_.Name -eq '.git' } | %{ $_.Parent })
+  return (Get-ChildItem $StartingPath -Recurse -Directory -Attributes Hidden, !Hidden | Where-Object { $_.Name -eq '.git' } | ForEach-Object { $_.Parent })
 
 
 }
