@@ -46,41 +46,45 @@ function Switch-Remotes {
     $all_remotes = git --git-dir=$path\.git remote -v 
     
     $origins = $all_remotes | Where-Object { ($_ -notlike "*github.com*") -and ($_ -like "origin*") }
-    if (!$origins) { Write-Host "$($path.Split("\")[-1]) is already on github." }
-
-    $urls = @($origins | ForEach-Object { (-split $_ )[1] } | Select-Object -Unique)
-    
-    if ( $urls.length -eq 0 ) {
-      throw "$($path) has no remotes set..."
-    }
-    if ( $urls.Length -gt 1 ) {
-      throw "$($path) has different fetch and push, will not process automatically $($urls)"
-
-    }
-    foreach ($url in $urls) {
-      $repo = $url.Split("/")[-1].Split(".")[0]
-      Write-Output "Checking Github Organization for Repository named $($repo)."
-      try { $remote = Write-Output (Get-GitHubRepository -RepositoryName $repo).$URLType }
-      catch { "Unable to find $($repo) on Github." }
-    }
-    if ( $remote ) {
-      if ( $DryRun ) {
-        Write-Output "Would run 'git remote rename origin old-origin'"
-        Write-Output "git --git-dir=$($path)\.git remote rename origin old-origin"
-        Write-Output "Switching to remote $($remote)"
-        Write-Output "Would run 'git --git-dir=$($path)\.git remote add origin $($remote)'"
+    if (!$origins) { 
+      Write-Host "$($path.Split("\")[-1]) is already on github."
+   }
+   else {
+       
+      $urls = @($origins | ForEach-Object { (-split $_ )[1] } | Select-Object -Unique)
+      
+      if ( $urls.length -eq 0 ) {
+        throw "$($path) has no remotes set..."
       }
-      else {
-        Write-Output "renaming origin to old-origin"
-        git --git-dir=$($path)\.git remote rename origin old-origin
-        Write-Output "Switching to remote $($remote)"
-        git --git-dir=$($path)\.git remote add origin $($remote)
+      if ( $urls.Length -gt 1 ) {
+        throw "$($path) has different fetch and push, will not process automatically $($urls)"
+
+      }
+      foreach ($url in $urls) {
+        $repo = $url.Split("/")[-1].Split(".")[0]
+        Write-Output "Checking Github Organization for Repository named $($repo)."
+        try { $remote = Write-Output (Get-GitHubRepository -RepositoryName $repo).$URLType }
+        catch { "Unable to find $($repo) on Github." }
+      }
+      if ( $remote ) {
+        if ( $DryRun ) {
+          Write-Output "Would run 'git remote rename origin old-origin'"
+          Write-Output "git --git-dir=$($path)\.git remote rename origin old-origin"
+          Write-Output "Switching to remote $($remote)"
+          Write-Output "Would run 'git --git-dir=$($path)\.git remote add origin $($remote)'"
+        }
+        else {
+          Write-Output "renaming origin to old-origin"
+          git --git-dir=$($path)\.git remote rename origin old-origin
+          Write-Output "Switching to remote $($remote)"
+          git --git-dir=$($path)\.git remote add origin $($remote)
+        }
       }
     }
   }
 }
 
-function Reset-Remote {
+function Reset-Remotes {
   param(
     [Parameter(Mandatory = $true)]
     [string[]]$Paths
@@ -92,5 +96,26 @@ function Reset-Remote {
     git --git-dir=$($path)\.git remote rename old-origin origin
 
     Write-Output "Reversed migration for $path"
+  }
+}
+
+
+function Find-Remotes {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string[]]$Paths
+  )
+    
+  foreach ($path in $paths ) {
+
+    $all_remotes = git --git-dir=$path\.git remote -v 
+
+    $origins = $all_remotes | Where-Object { $_ -like "origin*" }
+
+    $urls = @($origins | ForEach-Object { (-split $_ )[1] } | Select-Object -Unique)
+    foreach ($url in $urls) {
+            Write-Output "$($path.Split("\")[-1]) has remote $($url) set."
+
+    }
   }
 }
