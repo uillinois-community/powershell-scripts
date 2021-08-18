@@ -33,11 +33,10 @@ function Set-GithubTeamPermissionsAllTeamRepos {
     )
   
 
-    # $repos = Get-GithubTeamRepositories -OrganizationName $OrganizationName -TeamName $TeamName 
-    # $repos | Add-Member -MemberType AliasProperty -Name RepositoryUrl -value html_url
-    # $repos | Set-GitHubRepositoryTeamPermission -OwnerName $OrganizationName -TeamName $TeamName -Permission $Permission
+    $repos = Get-GithubTeamRepositories -OrganizationName $OrganizationName -TeamName $TeamName 
   
     foreach ($repo in $repos) {
         Set-GitHubRepositoryTeamPermission -ownername $OrganizationName -TeamName $TeamName -Permission $Permission -RepositoryName $repo.name
+        Write-Output "Granted $($TeamName) $($Permission) permissions for repo $($repo.name)."
     }   
 }
