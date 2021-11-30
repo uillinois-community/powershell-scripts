@@ -202,3 +202,4 @@ Export-ModuleMember -Function Get-GHToDiscuss
 Export-ModuleMember -Function Show-GHToDiscuss
 Export-ModuleMember -Function Get-GHNoMilestone
 Export-ModuleMember -Function Show-GHNoMilestone
+Export-ModuleMember -Function Show-GHIssuesAsMarkdown
