@@ -221,7 +221,7 @@ $env:GITHUB_REPOS = @('repository1', 'repository2', 'repository3')
 #>
 function Show-SprintStats(){
     param(
-        [switch]$list = $false,
+        [switch]$list = $false
     )
     Write-Host "## Stats"
     $closed = Get-GHClosed
