@@ -191,7 +191,64 @@ function Show-GHIssuesAsMarkdown() {
   }
 }
 
+<#
+.SYNOPSIS
 
+Output Markdown of some agile sprint statistics.
+
+.DESCRIPTION
+
+Outputs these statistics.
+
+- Closed issues updated in the last two weeks.
+- Count of issues not assigned to any GitHub Milestone.
+- Count of unsized issues across all repositories.
+
+.EXAMPLE
+
+Use the -list flag to also output lists containing each issue in Markdown link format.
+
+Show-SprintStats -list
+
+.NOTES
+
+Requires the following in your PowerShell profile:
+
+$env:GITHUB_USERNAME = 'github_username'
+$env:GITHUB_ORG = 'github_organization_name'
+$env:GITHUB_REPOS = @('repository1', 'repository2', 'repository3')
+
+#>
+function Show-SprintStats(){
+    param(
+        [switch]$list = $false,
+    )
+    Write-Host "## Stats"
+    $closed = Get-GHClosed
+    $closed_count = ($closed | Measure-Object).Count
+
+    $orphans = Get-GHNoMilestone -repository SecOps-Tools
+    $orphans_count = ($orphans | Measure-Object -Property updated_at -Min -Max).Count
+
+    $unsized = Get-GHUnsized
+    $unsized_count = ($unsized | Measure-Object).Count
+
+    Write-Host "Closed Issues this Sprint: $closed_count"
+    Write-Host "Count of Unsized Issues: $unsized_count"
+    Write-Host "Count of Issues with no milestone: $orphans_count"
+
+    if($list) {
+        Write-Host "## Closed Issues Updated this Sprint (Show-GHClosed)"
+        $closed | Show-GHIssuesAsMarkdown
+        Write-Host "## Unsized Issues (Show-GHUnsized)"
+        $unsized | Show-GHIssuesAsMarkdown
+        Write-Host "## Issues with No Milestone"
+        $orphans | Show-GHIssuesAsMarkdown
+    }
+
+}
+
+Export-ModuleMember -Function Show-SprintStats
 Export-ModuleMember -Function Get-GHClosed
 Export-ModuleMember -Function Show-GHClosed
 Export-ModuleMember -Function Get-GHMine
