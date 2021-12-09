@@ -75,6 +75,10 @@ Fetch GitHub issues I am working on.
 
 #>
 function Get-GHMine() {
+  param(
+    [int]$days = 1
+  )
+
   $repos = $env:GITHUB_REPOS.split(" ")
   $issueSearchParams = @{ Assignee = $env:GITHUB_USERNAME;
     State = 'open'; OwnerName = $env:GITHUB_ORG }
@@ -84,7 +88,8 @@ function Get-GHMine() {
   }
 
   # Ignore issues that have been updated in the last day.
-  $issues = $issues | Where-Object { $_.updated_at -lt (Get-Date).AddDays(-1) }
+  $issues = $issues | Where-Object { 
+    $_.updated_at -lt (Get-Date).AddDays(0 - $days) }
 
   return $issues
 }
@@ -94,9 +99,19 @@ function Get-GHMine() {
 
 Show GitHub issues I am working on.
 
+.EXAMPLE
+
+Show issues assigned to $env:github_username 
+that have not been updated in the past 14 days.
+
+Show-GHMine -days 14
+
 #>
 function Show-GHMine() {
-  Get-GHMine | ForEach-Object {
+  param(
+    [int]$days = 1
+  )
+  Get-GHMine -days $days | ForEach-Object {
     # Markdown output
     " + [" + $_.Title + " (" + $_.Number + ")](" + $_.html_url + ")"
   }
