@@ -1,7 +1,8 @@
 <#
 .SYNPOSIS
 
-Fetch closed GitHub issues that were updated in the last 14 days.
+Functions that fetch GitHub issues according to common agile practices, 
+and display them as Markdown.
 
 .NOTES
 
@@ -10,7 +11,21 @@ $env:GITHUB_USERNAME = 'github_username'
 $env:GITHUB_ORG = 'github_organization_name'
 $env:GITHUB_REPOS = @('repository1', 'repository2', 'repository3')
 
+.NOTES
+
+These fucntions will be retired over time in favor of splitting their
+functionality in a testable way across the github_for_agile, github_to_markdown,
+and agile_github_markdown modules.
+
+See agile_github_markdown for the easy-to-use functionality.
+
 #>
+
+function Get-GHEnvVars() {
+  $orgs = $env:GITHUB_ORGS.split(" ")
+  $repos = $env:GITHUB_REPOS.split(" ")
+  return $orgs, $repos
+}
 
 <#
 
@@ -27,8 +42,10 @@ function Get-GHIssues() {
     [switch]$open,
     [string]$updated
   )
-  $repos = $env:GITHUB_REPOS.split(" ")
-  $issueSearchParams = @{ State = 'all'; OwnerName = $env:GITHUB_ORG }
+  $orgs, $repos = Get-GHEnvVars
+  # TODO: Support multiple orgs
+  # $issueSearchParams = @{ State = 'all'; OwnerName = $orgs[0] }
+  $issueSearchParams = @{ State = 'open' }
 
   if($closed){
     $issueSearchParams['state'] = 'closed'
@@ -51,44 +68,6 @@ function Get-GHIssues() {
   return $issues
 }
 
-function Get-GHClosed {
-  param(
-    [int]$days = -14
-  )
-  $repos = $env:GITHUB_REPOS.split(" ")
-  $issueSearchParams = @{ State = 'closed'; OwnerName = $env:GITHUB_ORG }
-  $closed = @()
-  $repos | ForEach-Object { 
-    $closed += Get-GitHubIssue -RepositoryName $_ @issueSearchParams
-  }
-
-  # Limit to past two weeks
-  $issues = $closed | Where-Object { $_.updated_at -gt (Get-Date).AddDays($days) }
-  return $issues
-}
-
-
-<#
-.SYNPOSIS
-
-Fetch GitHub issues that are tagged to discuss this morning.
-
-#>
-function Get-GHToDiscuss {
-  param(
-    [int]$days = -14
-  )
-  $repos = $env:GITHUB_REPOS.split(" ")
-  $issueSearchParams = @{ State = 'open'; OwnerName = $env:GITHUB_ORG }
-  $closed = @()
-  $repos | ForEach-Object { 
-    $closed += Get-GitHubIssue -RepositoryName $_ @issueSearchParams
-  }
-  $issues = $issues | Where-Object { $_.labels -Contains 'DiscussAtStandUp' }
-
-  return $issues
-}
-
 
 <#
 .SYNOPSIS
@@ -100,7 +79,7 @@ function Show-GHClosed() {
   param(
     [int]$days = -14
   )
-  Get-GHClosed -days $days | ForEach-Object {
+  Get-AgileClosed -days $days | ForEach-Object {
     # Markdown output
     " + [" + $_.Title + " (" + $_.Number + ")](" + $_.html_url + ")"
   }
@@ -239,14 +218,6 @@ function Show-GHToDiscuss() {
 }
 
 
-function Show-GHIssuesAsMarkdown() {
-  process
-	{
-    # Markdown output
-    " + [" + $_.Title + " (" + $_.Number + ")](" + $_.html_url + ")" 
-  }
-}
-
 <#
 .SYNOPSIS
 
@@ -316,4 +287,4 @@ Export-ModuleMember -Function Get-GHToDiscuss
 Export-ModuleMember -Function Show-GHToDiscuss
 Export-ModuleMember -Function Get-GHNoMilestone
 Export-ModuleMember -Function Show-GHNoMilestone
-Export-ModuleMember -Function Show-GHIssuesAsMarkdown
+Export-ModuleMember -Function Get-GHEnvVars

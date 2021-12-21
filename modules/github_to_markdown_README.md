@@ -44,6 +44,6 @@ in your PowerShell profile:
 
 ```powershell
 $env:GITHUB_USERNAME = 'github_username'
-$env:GITHUB_ORG = 'github_organization_name'
+$env:GITHUB_ORGS = 'github_organization_name github_org2 github_org3'
 $env:GITHUB_REPOS = @('repository1', 'repository2', 'repository3')
 ```
