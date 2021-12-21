@@ -11,6 +11,46 @@ $env:GITHUB_ORG = 'github_organization_name'
 $env:GITHUB_REPOS = @('repository1', 'repository2', 'repository3')
 
 #>
+
+<#
+
+.EXAMPLE
+
+$issues = Get-GHIssues -closed -updated 2021-09-20..2021-12-10 
+$issues | Measure-Object
+$issues | Show-GHIssuesAsMarkdown
+
+#>
+function Get-GHIssues() {
+  param(
+    [switch]$closed,
+    [switch]$open,
+    [string]$updated
+  )
+  $repos = $env:GITHUB_REPOS.split(" ")
+  $issueSearchParams = @{ State = 'all'; OwnerName = $env:GITHUB_ORG }
+
+  if($closed){
+    $issueSearchParams['state'] = 'closed'
+  }
+  if($open){
+    $issueSearchParams['state'] = 'open'
+  }
+  $issues = @()
+  $repos | ForEach-Object { 
+    $issues += Get-GitHubIssue -RepositoryName $_ @issueSearchParams
+  }
+
+  if($updated){
+    $from, $to = $updated.split('..')
+    Write-Host "Showing issues updated from $from to $to."
+    $issues = $issues | Where-Object { $_.updated_at -gt $from }
+    $issues = $issues | Where-Object { $_.updated_at -lt $to }
+  }
+
+  return $issues
+}
+
 function Get-GHClosed {
   param(
     [int]$days = -14
@@ -178,7 +218,7 @@ function Show-GHUnsized() {
   }
 }
 
-function Show-GHByAssignee() {
+function Get-GHByAssignee() {
   $repos = $env:GITHUB_REPOS.split(" ")
   $issueSearchParams = @{ State = 'open'; OwnerName = $env:GITHUB_ORG }
   $issues = @()
@@ -190,6 +230,7 @@ function Show-GHByAssignee() {
 
   return $issues
 }
+
 
 
 
@@ -264,6 +305,7 @@ function Show-SprintStats(){
 }
 
 Export-ModuleMember -Function Show-SprintStats
+Export-ModuleMember -Function Get-GHIssues
 Export-ModuleMember -Function Get-GHClosed
 Export-ModuleMember -Function Show-GHClosed
 Export-ModuleMember -Function Get-GHMine
