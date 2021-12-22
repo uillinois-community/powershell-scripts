@@ -70,4 +70,34 @@ Describe 'Invoke-AgileQueries' {
         Should -Invoke -CommandName Get-GitHubIssue -Times 2
 
     }
+
+    It 'Sets Assignee' {
+        # Assemble
+        $expected_queries = @(
+            @{
+                OwnerName = 'org1'
+                RepositoryName = 'repo1'
+                State = 'open'
+                Assignee = 'tstark'
+            },
+            @{
+                OwnerName = 'org2'
+                RepositoryName = 'repo2'
+                State = 'open'
+                Assignee = 'tstark'
+            }
+        )
+
+        $expected = $expected_queries | ConvertTo-Json
+
+        # Act
+        $queries = Get-AgileQueries -Assignee tstark
+        $tested = $queries | ConvertTo-Json
+
+        # Assert
+        $queries.Count | Should -Be 2
+        $tested | Should -Be $expected
+
+    }
+
 }

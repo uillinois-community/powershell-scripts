@@ -50,7 +50,9 @@ $queries | ForEach-Object {
 function Get-AgileQueries {
     param(
         [switch]$closed,
-        [switch]$open
+        [switch]$open,
+        [switch]$mine,
+        [string]$assignee
     )
     $queries = @()
     Get-AgileRepos | ForEach-Object {
@@ -63,6 +65,12 @@ function Get-AgileQueries {
             OwnerName = $owner
             RepositoryName = $repo
             State = $state
+        }
+        if($mine) {
+            $query['Assignee'] = $ENV:GITHUB_USERNAME
+        }
+        if($assignee) {
+            $query['Assignee'] = $assignee
         }
         $queries += $query
     }
