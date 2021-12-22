@@ -52,7 +52,7 @@ function Get-AgileQueries {
         [switch]$mine,
         [string]$assignee,
         [string]$sort = "updated",
-        [string]$state = 'open',
+        [string]$state = 'Open',
         [string]$direction = "Descending"
     )
     $queries = @()
@@ -136,32 +136,43 @@ Fetch closed GitHub issues last updated within the given date range.
 
 .EXAMPLE
 
-$issues = Get-AgileClosed -updated 2021-07-01..2021-09-19
+$issues = Get-AgileByAge -updated 2021-07-01..2021-09-19
 $issues.Count
 
 .EXAMPLE
 
-$issues = Get-AgileClosed -days_ago 14
+$issues = Get-AgileByAge -days_ago 14
 $issues.Count
 
 #>
-function Get-AgileByAge {
+function Select-AgileByAge {
     param(
         [string]$updated,
-        [int]$days_ago,
-        [string]$state
+        [int]$days_ago
     )
-    $issues = Invoke-AgileQueries -queries (Get-AgileQueries -State $state)
-    if($updated){
-        $from, $to = $updated.split('..')
-        $issues = $issues | Where-Object { $_.updated_at -gt $from }
-        $issues = $issues | Where-Object { $_.updated_at -lt $to }
+    begin {
+        $results = @()
+        if($days_ago -And $updated) {
+            thow "-Updated and -DaysAgo cannot be used together."
+        }
+        if($days_ago){
+            $to = (Get-Date).Add(9000) # Set to far future to ignore.
+            $from = (Get-Date).AddDays(0 - $days_ago)
+        }
+        if($updated){
+            $from, $to = $updated.split('..')
+        }
+        $from_dt = Get-Date -Date $from
+        $to_dt = Get-Date -Date $to
     }
-    if($days_ago){
-        $from = (Get-Date).AddDays(0 - $days_ago)
-        $issues = $issues | Where-Object { $_.updated_at -gt $from }
+    process {
+        if(($_.updated_at -gt $from_dt) -And ($_.updated_at -lt $to_dt)) {
+            $results += $_
+        }
     }
-    return $issues
+    end {
+        return $results
+    }
 }
 
 
@@ -172,5 +183,5 @@ Export-ModuleMember -Function Invoke-AgileQueries
 
 # Export Various Queries
 Export-ModuleMember -Function Get-AgileToDiscuss
-Export-ModuleMember -Function Get-AgileByAge
+Export-ModuleMember -Function Select-AgileByAge
 Export-ModuleMember -Function Get-AgileOldest

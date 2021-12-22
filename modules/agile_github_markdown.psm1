@@ -35,9 +35,9 @@ function Show-AgileByAge {
     param(
         [string]$updated,
         [int]$days_ago,
-        [switch]$closed
+        [string]$state = "Open"
     )
-    Get-AgileByAge -closed $closed -updated $updated -days_ago $days_ago | Show-GHIssuesAsMarkdown
+    Get-AgileByAge -State $state -updated $updated -days_ago $days_ago | Show-GHIssuesAsMarkdown
 }
 
 <#

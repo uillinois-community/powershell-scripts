@@ -7,12 +7,14 @@ BeforeAll {
         {
             "html_url":  "https://example.com/964",
             "title":  "Work smarter.",
-            "number":  964
+            "number":  964,
+            "updated_at": "10/13/2020 2:54:33 PM"
         },
         {
             "html_url":  "https://example.com/965",
             "title":  "Work less hard.",
-            "number":  965
+            "number":  965,
+            "updated_at": "10/13/2021 2:54:33 PM"
         }]
 '@
     $issues = $json | ConvertFrom-Json
@@ -25,7 +27,7 @@ Describe 'Get-AgileQueries' {
         $expected_query_1 = @{
             OwnerName = 'org1'
             RepositoryName = 'repo1'
-            State = 'open'
+            State = 'Open'
         }
 
         # Act
@@ -49,12 +51,12 @@ Describe 'Invoke-AgileQueries' {
             @{
                 OwnerName = 'org1'
                 RepositoryName = 'repo1'
-                State = 'closed'
+                State = 'Closed'
             },
             @{
                 OwnerName = 'org2'
                 RepositoryName = 'repo2'
-                State = 'closed'
+                State = 'Closed'
             }
         )
 
@@ -72,7 +74,7 @@ Describe 'Invoke-AgileQueries' {
             @{
                 OwnerName = 'org1'
                 RepositoryName = 'repo1'
-                State = 'open'
+                State = 'Open'
                 Sort = 'updated'
                 Direction = 'Descending'
                 Assignee = 'tstark'
@@ -80,7 +82,7 @@ Describe 'Invoke-AgileQueries' {
             @{
                 OwnerName = 'org2'
                 RepositoryName = 'repo2'
-                State = 'open'
+                State = 'Open'
                 Sort = 'updated'
                 Direction = 'Descending'
                 Assignee = 'tstark'
@@ -96,6 +98,53 @@ Describe 'Invoke-AgileQueries' {
             $queries[$_] | Should -Be $expected_queries[$_]
         }
 
+    }
+
+}
+
+Describe 'Select-AgileByAge' {
+    It 'Handles -Updated' {
+        # Assemble
+        $issues = @(
+            @{
+                updated_at = Get-Date -Date "10/13/2020 2:54:33 PM"
+            },
+            @{
+                updated_at = Get-Date -Date "10/13/2020 2:54:33 PM"
+            },
+            @{
+                updated_at = Get-Date -Date "10/13/2021 2:54:33 PM"
+            }
+        )
+
+        # Act
+        $tested = $issues | Select-AgileByAge -updated 2020-01-01..2020-12-19 
+
+        # Assert
+        $tested.Count | Should -Be 2
+    }
+    It 'Handles -Days_Ago' {
+        # Assemble
+        $issues = @(
+            @{
+                updated_at = (Get-Date).addDays(-12)
+            },
+            @{
+                updated_at = (Get-Date).addDays(-13)
+            },
+            @{
+                updated_at = (Get-Date).addDays(-14)
+            },
+            @{
+                updated_at = (Get-Date).addDays(-15)
+            }
+        )
+
+        # Act
+        $tested = $issues | Select-AgileByAge -Days_Ago 14
+
+        # Assert
+        $tested.Count | Should -Be 2
     }
 
 }
