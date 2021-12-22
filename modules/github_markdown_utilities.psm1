@@ -68,25 +68,6 @@ function Get-GHIssues() {
   return $issues
 }
 
-
-<#
-.SYNOPSIS
-
-Show closed GitHub issues that were updated in the last 14 days.
-
-#>
-function Show-GHClosed() {
-  param(
-    [int]$days = -14
-  )
-  Get-AgileClosed -days $days | ForEach-Object {
-    # Markdown output
-    " + [" + $_.Title + " (" + $_.Number + ")](" + $_.html_url + ")"
-  }
-  # Format-Table -Property Number, Title, Url
-
-}
-
 <#
 .SYNPOSIS
 
