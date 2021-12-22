@@ -23,7 +23,12 @@ function Show-AgileToDiscuss {
 <#
 .SYNOPSIS
 
-Display Get-AgileClosed results as Markdown.
+Display Get-AgileByAge results as Markdown.
+
+.EXAMPLE
+
+Show-AgileByAge | Out-File SeptIssues.md
+
 
 #>
 function Show-AgileByAge {
@@ -39,6 +44,10 @@ function Show-AgileByAge {
 .SYNOPSIS
 
 Display Get-AgileOldIssues results as Markdown.
+
+.EXAMPLE
+
+Show-AgileOldest | Out-File OldestIssues.md
 
 #>
 function Show-AgileOldest {
