@@ -60,3 +60,16 @@ Add the scripts to your path.
 cd bin
 $ENV:PATH = "$ENV:PATH;$(Get-Location)"
 ```
+
+Some of these libraries require that you set your favorite GitHub repositories
+ as an environment variable.
+
+```Powershell
+$env:GITHUB_USERNAME = 'YOUR_GITHUB_USERNAME'
+$env:GITHUB_REPOS = @(
+	'USERNAME/REPOSITORY_NAME', 
+	'USERNAME/REPOSITORY_NAME', 
+	'ORGANIZATION_NAME/REPOSITORY_NAME',
+	'ORGANIZATION_NAME/REPOSITORY_NAME'
+)
+```
