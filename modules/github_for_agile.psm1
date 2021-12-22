@@ -49,20 +49,15 @@ $queries | ForEach-Object {
 #>
 function Get-AgileQueries {
     param(
-        [switch]$closed,
-        [switch]$open,
         [switch]$mine,
         [string]$assignee,
         [string]$sort = "updated",
+        [string]$state = 'open',
         [string]$direction = "Descending"
     )
     $queries = @()
     Get-AgileRepos | ForEach-Object {
         $owner, $repo = $_.split('/')
-        $state = 'open'
-        if($closed){
-            $state = 'closed'
-        }
         $query = @{
             OwnerName = $owner
             RepositoryName = $repo
@@ -154,9 +149,9 @@ function Get-AgileByAge {
     param(
         [string]$updated,
         [int]$days_ago,
-        [switch]$closed
+        [string]$state
     )
-    $issues = Invoke-AgileQueries -queries (Get-AgileQueries -closed $closed)
+    $issues = Invoke-AgileQueries -queries (Get-AgileQueries -State $state)
     if($updated){
         $from, $to = $updated.split('..')
         $issues = $issues | Where-Object { $_.updated_at -gt $from }

@@ -29,7 +29,7 @@ Describe 'Get-AgileQueries' {
         }
 
         # Act
-        $tested = Get-AgileQueries -Closed $false
+        $tested = Get-AgileQueries
 
         # Assert
         $tested.Count | Should -Be 2
