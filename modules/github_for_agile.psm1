@@ -52,7 +52,9 @@ function Get-AgileQueries {
         [switch]$closed,
         [switch]$open,
         [switch]$mine,
-        [string]$assignee
+        [string]$assignee,
+        [string]$sort = "updated",
+        [string]$direction = "Descending"
     )
     $queries = @()
     Get-AgileRepos | ForEach-Object {
@@ -65,6 +67,8 @@ function Get-AgileQueries {
             OwnerName = $owner
             RepositoryName = $repo
             State = $state
+            Sort = $sort
+            Direction = $direction
         }
         if($mine) {
             $query['Assignee'] = $ENV:GITHUB_USERNAME
@@ -100,9 +104,22 @@ function Invoke-AgileQueries {
     $queries | ForEach-Object {
         $query = $_
         $issues = Get-GitHubIssue @query
+        $results += $issues
     }
-    $results += $issues
     return $results
+}
+
+<#
+.SYNPOSIS
+
+Fetch GitHub issues starting with the oldest updated date.
+
+#>
+function Get-AgileOldest {
+    $issues = Invoke-AgileQueries -queries (
+        Get-AgileQueries -sort "updated" -direction "Ascending"
+    )
+    return $issues
 }
 
 <#
@@ -133,12 +150,13 @@ $issues = Get-AgileClosed -days_ago 14
 $issues.Count
 
 #>
-function Get-AgileClosed {
+function Get-AgileByAge {
     param(
         [string]$updated,
-        [int]$days_ago
+        [int]$days_ago,
+        [switch]$closed
     )
-    $issues = Invoke-AgileQueries -queries (Get-AgileQueries -closed)
+    $issues = Invoke-AgileQueries -queries (Get-AgileQueries -closed $closed)
     if($updated){
         $from, $to = $updated.split('..')
         $issues = $issues | Where-Object { $_.updated_at -gt $from }
@@ -159,4 +177,5 @@ Export-ModuleMember -Function Invoke-AgileQueries
 
 # Export Various Queries
 Export-ModuleMember -Function Get-AgileToDiscuss
-Export-ModuleMember -Function Get-AgileClosed
+Export-ModuleMember -Function Get-AgileByAge
+Export-ModuleMember -Function Get-AgileOldest

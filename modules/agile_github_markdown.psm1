@@ -21,19 +21,33 @@ function Show-AgileToDiscuss {
 }
 
 <#
-.SYNPOSIS
+.SYNOPSIS
 
 Display Get-AgileClosed results as Markdown.
 
 #>
-function Show-AgileClosed {
+function Show-AgileByAge {
     param(
         [string]$updated,
-        [int]$days_ago
+        [int]$days_ago,
+        [switch]$closed
     )
-    Get-AgileClosed -updated $updated -days_ago $days_ago | Show-GHIssuesAsMarkdown
+    Get-AgileByAge -closed $closed -updated $updated -days_ago $days_ago | Show-GHIssuesAsMarkdown
 }
+
+<#
+.SYNOPSIS
+
+Display Get-AgileOldIssues results as Markdown.
+
+#>
+function Show-AgileOldest {
+    Get-AgileOldest | Show-GHIssuesAsMarkdown
+}
+
+
 
 # Export various functions.
 Export-ModuleMember -Function Show-AgileToDiscuss
-Export-ModuleMember -Function Show-AgileClosed
+Export-ModuleMember -Function Show-AgileByAge
+Export-ModuleMember -Function Show-AgileOldest
