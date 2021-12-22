@@ -50,7 +50,7 @@ git clone https://github.com/uillinois-community/powershell-scripts
 Load all of the modules.
 
 ```Powershell
-cd github-powershell-scripts
+cd powershell-scripts
 Get-ChildItem ./modules/ | import-module -verbose
 ```
 
