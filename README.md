@@ -3,6 +3,7 @@
 ## Prerequisites/Dependencies
 
 ### Powershell Module for Github
+
 Most of the PowerShell modules require the Powershell module for Github.  
 
 #### Installation
@@ -33,12 +34,23 @@ For a full explanation of all possible configurations, run the following:
 a collection of useful powershell scripts used by Library IT at University of Illinois at Urbana-Champaign to manage our github organizations.
 
 ## Instructions
+
 Clone the Reposistory
-```
+
+```Powershell
 git clone https://github.com/uillinois-community/powershell-scripts
 ```
-Load all the modules
+
+Load all of the modules.
+
 ```Powershell
 cd github-powershell-scripts
-Get-ChildItem ./bin/ | import-module -verbose
+Get-ChildItem ./modules/ | import-module -verbose
+```
+
+Add the scripts to your path.
+
+```Powershell
+cd bin
+$ENV:PATH = "$ENV:PATH;$(Get-Location)"
 ```
