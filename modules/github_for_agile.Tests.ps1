@@ -34,15 +34,15 @@ Describe 'Get-AgileQueries' {
                 State = 'closed'
             }
         )
-        $expected = $expected_queries | ConvertTo-Json
 
         # Act
         $queries = Get-AgileQueries -Closed
-        $tested = $queries | ConvertTo-Json
 
         # Assert
         $queries.Count | Should -Be 2
-        $tested | Should -Be $expected
+        $expected_queries.Keys | ForEach-Object {
+            $queries[$_] | Should -Be $expected_queries[$_]
+        }
 
     }
 }
@@ -78,25 +78,28 @@ Describe 'Invoke-AgileQueries' {
                 OwnerName = 'org1'
                 RepositoryName = 'repo1'
                 State = 'open'
+                Sort = 'updated'
+                Direction = 'Descending'
                 Assignee = 'tstark'
             },
             @{
                 OwnerName = 'org2'
                 RepositoryName = 'repo2'
                 State = 'open'
+                Sort = 'updated'
+                Direction = 'Descending'
                 Assignee = 'tstark'
             }
         )
 
-        $expected = $expected_queries | ConvertTo-Json
-
         # Act
         $queries = Get-AgileQueries -Assignee tstark
-        $tested = $queries | ConvertTo-Json
 
         # Assert
         $queries.Count | Should -Be 2
-        $tested | Should -Be $expected
+        $expected_queries.Keys | ForEach-Object {
+            $queries[$_] | Should -Be $expected_queries[$_]
+        }
 
     }
 
