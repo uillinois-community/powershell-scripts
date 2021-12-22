@@ -51,7 +51,7 @@ Load all of the modules.
 
 ```Powershell
 cd powershell-scripts
-Get-ChildItem ./modules/ | import-module -verbose
+Get-ChildItem .\modules\*.psm1 | Import-Module -Verbose
 ```
 
 Add the scripts to your path.
