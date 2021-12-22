@@ -22,28 +22,23 @@ BeforeAll {
 Describe 'Get-AgileQueries' {
     It 'Returns paramaters to find closed issues this sprint' {
         # Assemble
-        $expected_queries = @(
-            @{
-                OwnerName = 'org1'
-                RepositoryName = 'repo1'
-                State = 'closed'
-            },
-            @{
-                OwnerName = 'org2'
-                RepositoryName = 'repo2'
-                State = 'closed'
-            }
-        )
-
-        # Act
-        $queries = Get-AgileQueries -Closed
-
-        # Assert
-        $queries.Count | Should -Be 2
-        $expected_queries.Keys | ForEach-Object {
-            $queries[$_] | Should -Be $expected_queries[$_]
+        $expected_query_1 = @{
+            OwnerName = 'org1'
+            RepositoryName = 'repo1'
+            State = 'open'
         }
 
+        # Act
+        $tested = Get-AgileQueries -Closed $false
+
+        # Assert
+        $tested.Count | Should -Be 2
+        $tested_1 = $tested[0]
+
+        $expected_query_1.Keys | ForEach-Object {
+            $key = $_
+            $tested_1[$key] | Should -Be $expected_query_1[$key]
+        }
     }
 }
 
