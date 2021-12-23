@@ -40,7 +40,7 @@ environment setting.
 
 $ENV:GITHUB_REPOS = @('org/repo1', 'org2/repo2')
 $issues = @()
-$queries = Get-AgileQueries -state 'Open'
+$queries = Get-AgileQuery -state 'Open'
 $queries | ForEach-Object { 
     $query = $_
     $issues += Get-GitHubIssue @query
@@ -49,7 +49,7 @@ $queries | ForEach-Object {
 
 
 #>
-function Get-AgileQueries {
+function Get-AgileQuery {
     param(
         [switch]$mine,
         [string]$assignee,
@@ -83,17 +83,17 @@ function Get-AgileQueries {
 .SYNOPSIS
 
 Invoke queries with Get-GitHubIssues, gathering the returned issue objects.
-Typically used with Get-AgileQueries.
+Typically used with Get-AgileQuery.
 
 .EXAMPLE
 
 $ENV:GITHUB_REPOS = @('org/repo1', 'org2/repo2')
-$issues = Invoke-AgileQueries -queries (Get-AgileQueries -closed)
+$issues = Invoke-AgileQuery -queries (Get-AgileQuery -closed)
 ($issues | Measure-Object).Count
 $issues | Show-MarkdownFromGitHub
 
 #>
-function Invoke-AgileQueries {
+function Invoke-AgileQuery {
     param(
         [hashtable[]]$queries
     )
@@ -130,8 +130,8 @@ $oldest[0..10] | Show-MarkdownFromGitHub
 
 #>
 function Get-AgileOldest {
-    $issues = Invoke-AgileQueries -queries (
-        Get-AgileQueries -sort "updated" -direction "Ascending"
+    $issues = Invoke-AgileQuery -queries (
+        Get-AgileQuery -sort "updated" -direction "Ascending"
     )
     return $issues
 }
@@ -191,9 +191,7 @@ function Select-AgileByAge {
             $from_dt = (Get-Date).AddDays(0 - $days_ago)
         }
         if($updated){
-            Write-Host "Updated $updated"
             $from, $to = $updated.replace('..', '|').split('|')
-            Write-Host "To $to"
             $from_dt = Get-Date -Date $from
             $to_dt = Get-Date -Date $to
         }
@@ -209,12 +207,74 @@ function Select-AgileByAge {
 }
 
 
+
+<#
+.SYNOPSIS
+
+Display Get-AgileToDiscuss results as Markdown.
+
+#>
+function Show-AgileToDiscuss {
+    $queries = Get-AgileQuery -State 'Open'
+    $issues = Invoke-AgileQuery -queries $queries
+    $issues = $issues | Select-AgileToDiscuss
+    $issues | Show-MarkdownFromGitHub
+}
+
+<#
+.SYNOPSIS
+
+Display Get-AgileByAge results as Markdown.
+
+.EXAMPLE
+
+Show-AgileByAge | Out-File SeptIssues.md
+
+
+#>
+function Show-AgileByAge {
+    param(
+        [string]$updated,
+        [int]$days_ago,
+        [string]$state = "Open"
+    )
+    $queries = Get-AgileQuery -State $state 
+    $issues = Invoke-AgileQuery -queries $queries
+    if($updated) {
+        $issues = $issues | Select-AgileByAge -updated $updated
+    }
+    if($days_ago) {
+        $issues = $issues | Select-AgileByAge -days_ago $days_ago 
+    }
+    $issues | Show-MarkdownFromGitHub
+}
+
+<#
+.SYNOPSIS
+
+Display Get-AgileOldIssues results as Markdown.
+
+.EXAMPLE
+
+Show-AgileOldest | Out-File OldestIssues.md
+
+#>
+function Show-AgileOldest {
+    Get-AgileOldest | Show-MarkdownFromGitHub
+}
+
+
 # Export Core Functions
 Export-ModuleMember -Function Get-AgileRepos
-Export-ModuleMember -Function Get-AgileQueries
-Export-ModuleMember -Function Invoke-AgileQueries
+Export-ModuleMember -Function Get-AgileQuery
+Export-ModuleMember -Function Invoke-AgileQuery
 
-# Export Various Queries
+# Export Select- and Get- functions.
 Export-ModuleMember -Function Select-AgileToDiscuss
 Export-ModuleMember -Function Select-AgileByAge
 Export-ModuleMember -Function Get-AgileOldest
+
+# Export Show- functions.
+Export-ModuleMember -Function Show-AgileToDiscuss
+Export-ModuleMember -Function Show-AgileByAge
+Export-ModuleMember -Function Show-AgileOldest

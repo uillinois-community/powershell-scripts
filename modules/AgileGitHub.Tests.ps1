@@ -1,4 +1,4 @@
-Describe 'Get-AgileQueries' {
+Describe 'Get-AgileQuery' {
     BeforeAll {
         Mock -CommandName Get-AgileRepos { 
             return @('org1/repo1', 'org2/repo2')
@@ -31,7 +31,7 @@ Describe 'Get-AgileQueries' {
         }
 
         # Act
-        $tested = Get-AgileQueries
+        $tested = Get-AgileQuery
 
         # Assert
         $tested.Count | Should -Be 2
@@ -44,7 +44,7 @@ Describe 'Get-AgileQueries' {
     }
 }
 
-Describe 'Invoke-AgileQueries' {
+Describe 'Invoke-AgileQuery' {
     BeforeAll {
         Mock -CommandName Get-GitHubIssue { return $issues }
         Mock -CommandName Get-AgileRepos { 
@@ -67,7 +67,7 @@ Describe 'Invoke-AgileQueries' {
         )
 
         # Act
-        Invoke-AgileQueries -Queries $queries
+        Invoke-AgileQuery -Queries $queries
 
         # Asset
         Should -Invoke -CommandName Get-GitHubIssue -Times 2
@@ -96,7 +96,7 @@ Describe 'Invoke-AgileQueries' {
         )
 
         # Act
-        $queries = Get-AgileQueries -Assignee tstark
+        $queries = Get-AgileQuery -Assignee tstark
 
         # Assert
         $queries.Count | Should -Be 2
@@ -179,65 +179,3 @@ Describe 'Select-AgileToDiscuss' {
         $tested.Count | Should -Be 2
     }
 }
-
-<#
-.SYNOPSIS
-
-Display Get-AgileToDiscuss results as Markdown.
-
-#>
-function Show-AgileToDiscuss {
-    $queries = Get-AgileQueries -State 'Open'
-    $issues = Invoke-AgileQueries -queries $queries
-    $issues = $issues | Select-AgileToDiscuss
-    $issues | Show-MarkdownFromGitHub
-}
-
-<#
-.SYNOPSIS
-
-Display Get-AgileByAge results as Markdown.
-
-.EXAMPLE
-
-Show-AgileByAge | Out-File SeptIssues.md
-
-
-#>
-function Show-AgileByAge {
-    param(
-        [string]$updated,
-        [int]$days_ago,
-        [string]$state = "Open"
-    )
-    $queries = Get-AgileQueries -State $state 
-    $issues = Invoke-AgileQueries -queries $queries
-    if($updated) {
-        $issues = $issues | Select-AgileByAge -updated $updated
-    }
-    if($days_ago) {
-        $issues = $issues | Select-AgileByAge -days_ago $days_ago 
-    }
-    $issues | Show-MarkdownFromGitHub
-}
-
-<#
-.SYNOPSIS
-
-Display Get-AgileOldIssues results as Markdown.
-
-.EXAMPLE
-
-Show-AgileOldest | Out-File OldestIssues.md
-
-#>
-function Show-AgileOldest {
-    Get-AgileOldest | Show-MarkdownFromGitHub
-}
-
-
-
-# Export various functions.
-Export-ModuleMember -Function Show-AgileToDiscuss
-Export-ModuleMember -Function Show-AgileByAge
-Export-ModuleMember -Function Show-AgileOldest
