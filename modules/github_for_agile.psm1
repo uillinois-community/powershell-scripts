@@ -105,9 +105,16 @@ function Invoke-AgileQueries {
 }
 
 <#
-.SYNPOSIS
+.SYNOPSIS
 
 Fetch GitHub issues starting with the oldest updated date.
+
+.EXAMPLE
+
+$oldest = Get-AgileOldest
+$oldest[0].updated_at
+$oldest[0].html_url
+$oldest[0..10] | Show-GHIssuesAsMarkdown
 
 #>
 function Get-AgileOldest {
