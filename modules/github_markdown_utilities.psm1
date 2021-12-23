@@ -4,6 +4,13 @@
 Functions that fetch GitHub issues according to common agile practices, 
 and display them as Markdown.
 
+.DESCRIPTION
+
+This module is being deprecated in favor of AgileGitHub, which
+ accomplishes the same work in more testable ways.
+
+AgileGitHub also requires fewer environment variables.
+
 .NOTES
 
 This modules requires the following in your PowerShell profile:
@@ -66,29 +73,6 @@ function Get-GHIssues() {
   }
 
   return $issues
-}
-
-<#
-.SYNOPSIS
-
-Show GitHub issues I am working on.
-
-.EXAMPLE
-
-Show issues assigned to $env:github_username 
-that have not been updated in the past 14 days.
-
-Show-GHMine -days 14
-
-#>
-function Show-GHMine() {
-  param(
-    [int]$days = 1
-  )
-  Get-GHMine -days $days | ForEach-Object {
-    # Markdown output
-    " + [" + $_.Title + " (" + $_.Number + ")](" + $_.html_url + ")"
-  }
 }
 
 <#
@@ -165,14 +149,6 @@ function Get-GHByAssignee() {
   return $issues
 }
 
-
-
-
-function Show-GHToDiscuss() {
-  Get-GHToDiscuss | Show-MarkdownFromGitHub
-}
-
-
 <#
 .SYNOPSIS
 
@@ -232,14 +208,8 @@ function Show-SprintStats(){
 
 Export-ModuleMember -Function Show-SprintStats
 Export-ModuleMember -Function Get-GHIssues
-Export-ModuleMember -Function Get-GHClosed
-Export-ModuleMember -Function Show-GHClosed
-Export-ModuleMember -Function Get-GHMine
-Export-ModuleMember -Function Show-GHMine
 Export-ModuleMember -Function Get-GHUnsized
 Export-ModuleMember -Function Show-GHUnsized
-Export-ModuleMember -Function Get-GHToDiscuss
-Export-ModuleMember -Function Show-GHToDiscuss
 Export-ModuleMember -Function Get-GHNoMilestone
 Export-ModuleMember -Function Show-GHNoMilestone
 Export-ModuleMember -Function Get-GHEnvVars
