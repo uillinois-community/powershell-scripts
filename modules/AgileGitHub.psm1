@@ -26,10 +26,18 @@ Get-AgileRepos
 
 #>
 function Get-AgileRepos {
-    return $ENV:GITHUB_REPOS.split(" ")
+    $repos = $ENV:GITHUB_REPOS.split(" ")
+    if(-Not $repos) {
+        Write-Warning "GITHUB_REPOS environment variable is not set."
+    }
+    return $repos
 }
 function Get-AgileUser {
-    return $ENV:GITHUB_USERNAME
+    $username = $ENV:GITHUB_USERNAME
+    if(-Not $username) {
+        Write-Warning "GITHUB_USERNAME environment variable is not set."
+    }
+    return $username
 }
 
 
