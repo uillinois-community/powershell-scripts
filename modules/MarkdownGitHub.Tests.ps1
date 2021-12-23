@@ -1,4 +1,4 @@
-Describe 'Show-GHIssuesAsMarkdown' {
+Describe 'Show-MarkdownFromGitHub' {
     It 'Outputs the expected markdown list.' {
         # Assemble
         $json = @'
@@ -22,7 +22,7 @@ Describe 'Show-GHIssuesAsMarkdown' {
             )
 
         # Act
-        $markdown = $issues | Show-GHIssuesAsMarkdown
+        $markdown = $issues | Show-MarkdownFromGitHub
 
         # Assert
         $markdown | Should -Be $expected_markdown

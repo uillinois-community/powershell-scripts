@@ -40,11 +40,13 @@ environment setting.
 
 $ENV:GITHUB_REPOS = @('org/repo1', 'org2/repo2')
 $issues = @()
-$queries = Get-AgileQueries -closed
+$queries = Get-AgileQueries -state 'Open'
 $queries | ForEach-Object { 
-    $issues += Get-GitHubIssue $_
+    $query = $_
+    $issues += Get-GitHubIssue @query
 }
 ($issues | Measure-Object).Count
+
 
 #>
 function Get-AgileQueries {
@@ -78,7 +80,7 @@ function Get-AgileQueries {
 
 <#
 
-.SYNPOSIS
+.SYNOPSIS
 
 Invoke queries with Get-GitHubIssues, gathering the returned issue objects.
 Typically used with Get-AgileQueries.
@@ -88,7 +90,7 @@ Typically used with Get-AgileQueries.
 $ENV:GITHUB_REPOS = @('org/repo1', 'org2/repo2')
 $issues = Invoke-AgileQueries -queries (Get-AgileQueries -closed)
 ($issues | Measure-Object).Count
-$issues | Show-GHIssuesAsMarkdown
+$issues | Show-MarkdownFromGitHub
 
 #>
 function Invoke-AgileQueries {
@@ -124,7 +126,7 @@ Fetch GitHub issues starting with the oldest updated date.
 $oldest = Get-AgileOldest
 $oldest[0].updated_at
 $oldest[0].html_url
-$oldest[0..10] | Show-GHIssuesAsMarkdown
+$oldest[0..10] | Show-MarkdownFromGitHub
 
 #>
 function Get-AgileOldest {
@@ -135,7 +137,7 @@ function Get-AgileOldest {
 }
 
 <#
-.SYNPOSIS
+.SYNOPSIS
 
 Select GitHub issues that are tagged to discuss at the Stand Up meeting.
 
@@ -159,7 +161,7 @@ function Select-AgileToDiscuss {
 }
 
 <#
-.SYNPOSIS
+.SYNOPSIS
 
 Fetch closed GitHub issues last updated within the given date range.
 

@@ -179,3 +179,65 @@ Describe 'Select-AgileToDiscuss' {
         $tested.Count | Should -Be 2
     }
 }
+
+<#
+.SYNOPSIS
+
+Display Get-AgileToDiscuss results as Markdown.
+
+#>
+function Show-AgileToDiscuss {
+    $queries = Get-AgileQueries -State 'Open'
+    $issues = Invoke-AgileQueries -queries $queries
+    $issues = $issues | Select-AgileToDiscuss
+    $issues | Show-MarkdownFromGitHub
+}
+
+<#
+.SYNOPSIS
+
+Display Get-AgileByAge results as Markdown.
+
+.EXAMPLE
+
+Show-AgileByAge | Out-File SeptIssues.md
+
+
+#>
+function Show-AgileByAge {
+    param(
+        [string]$updated,
+        [int]$days_ago,
+        [string]$state = "Open"
+    )
+    $queries = Get-AgileQueries -State $state 
+    $issues = Invoke-AgileQueries -queries $queries
+    if($updated) {
+        $issues = $issues | Select-AgileByAge -updated $updated
+    }
+    if($days_ago) {
+        $issues = $issues | Select-AgileByAge -days_ago $days_ago 
+    }
+    $issues | Show-MarkdownFromGitHub
+}
+
+<#
+.SYNOPSIS
+
+Display Get-AgileOldIssues results as Markdown.
+
+.EXAMPLE
+
+Show-AgileOldest | Out-File OldestIssues.md
+
+#>
+function Show-AgileOldest {
+    Get-AgileOldest | Show-MarkdownFromGitHub
+}
+
+
+
+# Export various functions.
+Export-ModuleMember -Function Show-AgileToDiscuss
+Export-ModuleMember -Function Show-AgileByAge
+Export-ModuleMember -Function Show-AgileOldest

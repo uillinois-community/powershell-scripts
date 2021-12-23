@@ -3,10 +3,10 @@
 .EXAMPLE
 
 $issues = Get-GitHubIssues <...params...>
-$issues | Show-GHIssuesAsMarkdown
+$issues | Show-MarkdownFromGitHub
 
 #>
-function Show-GHIssuesAsMarkdown() {
+function Show-MarkdownFromGitHub() {
   process
 	{
     # Markdown output
@@ -14,4 +14,4 @@ function Show-GHIssuesAsMarkdown() {
   }
 }
 
-Export-ModuleMember -Function Show-GHIssuesAsMarkdown
+Export-ModuleMember -Function Show-MarkdownFromGitHub

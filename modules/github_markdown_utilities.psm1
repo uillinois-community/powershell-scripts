@@ -1,5 +1,5 @@
 <#
-.SYNPOSIS
+.SYNOPSIS
 
 Functions that fetch GitHub issues according to common agile practices, 
 and display them as Markdown.
@@ -33,7 +33,7 @@ function Get-GHEnvVars() {
 
 $issues = Get-GHIssues -closed -updated 2021-09-20..2021-12-10 
 $issues | Measure-Object
-$issues | Show-GHIssuesAsMarkdown
+$issues | Show-MarkdownFromGitHub
 
 #>
 function Get-GHIssues() {
@@ -69,7 +69,7 @@ function Get-GHIssues() {
 }
 
 <#
-.SYNPOSIS
+.SYNOPSIS
 
 Fetch GitHub issues I am working on.
 
@@ -168,7 +168,7 @@ function Show-GHNoMilestone(){
   param(
     [string]$repository
   )
-  Get-GHNoMilestone -Repository $repository | Show-GHIssuesAsMarkdown
+  Get-GHNoMilestone -Repository $repository | Show-MarkdownFromGitHub
 }
 
 function Show-GHUnsized() {
@@ -195,7 +195,7 @@ function Get-GHByAssignee() {
 
 
 function Show-GHToDiscuss() {
-  Get-GHToDiscuss | Show-GHIssuesAsMarkdown
+  Get-GHToDiscuss | Show-MarkdownFromGitHub
 }
 
 
@@ -247,11 +247,11 @@ function Show-SprintStats(){
 
     if($list) {
         Write-Host "## Closed Issues Updated this Sprint (Show-GHClosed)"
-        $closed | Show-GHIssuesAsMarkdown
+        $closed | Show-MarkdownFromGitHub
         Write-Host "## Unsized Issues (Show-GHUnsized)"
-        $unsized | Show-GHIssuesAsMarkdown
+        $unsized | Show-MarkdownFromGitHub
         Write-Host "## Issues with No Milestone"
-        $orphans | Show-GHIssuesAsMarkdown
+        $orphans | Show-MarkdownFromGitHub
     }
 
 }
