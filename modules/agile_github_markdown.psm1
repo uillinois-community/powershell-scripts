@@ -17,7 +17,10 @@ Display Get-AgileToDiscuss results as Markdown.
 
 #>
 function Show-AgileToDiscuss {
-    Get-AgileToDiscuss | Show-GHIssuesAsMarkdown
+    $queries = Get-AgileQueries -State 'Open'
+    $issues = Invoke-AgileQueries -queries $queries
+    $issues = $issues | Select-AgileToDiscuss
+    $issues | Show-GHIssuesAsMarkdown
 }
 
 <#
@@ -37,7 +40,15 @@ function Show-AgileByAge {
         [int]$days_ago,
         [string]$state = "Open"
     )
-    Get-AgileByAge -State $state -updated $updated -days_ago $days_ago | Show-GHIssuesAsMarkdown
+    $queries = Get-AgileQueries -State $state 
+    $issues = Invoke-AgileQueries -queries $queries
+    if($updated) {
+        $issues = $issues | Select-AgileByAge -updated $updated
+    }
+    if($days_ago) {
+        $issues = $issues | Select-AgileByAge -days_ago $days_ago 
+    }
+    $issues | Show-GHIssuesAsMarkdown
 }
 
 <#

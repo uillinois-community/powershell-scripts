@@ -120,13 +120,25 @@ function Get-AgileOldest {
 <#
 .SYNPOSIS
 
-Fetch GitHub issues that are tagged to discuss at the Stand Up meeting.
+Select GitHub issues that are tagged to discuss at the Stand Up meeting.
 
 #>
-function Get-AgileToDiscuss {
-    $issues = Invoke-AgileQueries -queries (Get-AgileQueries)
-    $issues = $issues | Where-Object { $_.labels -Contains 'DiscussAtStandUp' }
-    return $issues
+function Select-AgileToDiscuss {
+    begin{
+        $results = @()
+    }
+    process{
+        foreach ($label in $_.labels) {
+            if($label.name -Contains "DiscussAtStandUp") {
+                $results += $_
+            }
+        }
+        if($_.labels -Contains 'DiscussAtStandUp') {
+        }
+    }
+    end{
+        return $results
+    }
 }
 
 <#
@@ -156,14 +168,16 @@ function Select-AgileByAge {
             thow "-Updated and -DaysAgo cannot be used together."
         }
         if($days_ago){
-            $to = (Get-Date).Add(9000) # Set to far future to ignore.
-            $from = (Get-Date).AddDays(0 - $days_ago)
+            $to_dt = (Get-Date).Add(900) # Set to far future to ignore.
+            $from_dt = (Get-Date).AddDays(0 - $days_ago)
         }
         if($updated){
-            $from, $to = $updated.split('..')
+            Write-Host "Updated $updated"
+            $from, $to = $updated.replace('..', '|').split('|')
+            Write-Host "To $to"
+            $from_dt = Get-Date -Date $from
+            $to_dt = Get-Date -Date $to
         }
-        $from_dt = Get-Date -Date $from
-        $to_dt = Get-Date -Date $to
     }
     process {
         if(($_.updated_at -gt $from_dt) -And ($_.updated_at -lt $to_dt)) {
@@ -182,6 +196,6 @@ Export-ModuleMember -Function Get-AgileQueries
 Export-ModuleMember -Function Invoke-AgileQueries
 
 # Export Various Queries
-Export-ModuleMember -Function Get-AgileToDiscuss
+Export-ModuleMember -Function Select-AgileToDiscuss
 Export-ModuleMember -Function Select-AgileByAge
 Export-ModuleMember -Function Get-AgileOldest
