@@ -179,3 +179,24 @@ Describe 'Select-AgileToDiscuss' {
         $tested.Count | Should -Be 2
     }
 }
+Describe 'Show-AgileMine' {
+    BeforeAll {
+        # Assemble
+        $issues = @()
+        Mock -CommandName Get-AgileUser { return 'tstark' }
+        Mock -CommandName Get-AgileQuery {}
+        Mock -CommandName Invoke-AgileQuery { }
+        Mock -CommandName Show-MarkdownFromGitHub { }
+    }
+    It 'Invokes expected commands' {
+
+        # Act
+        Show-AgileMine
+
+        # Assert
+        Should -Invoke -CommandName Get-AgileUser -Times 1
+        Should -Invoke -CommandName Get-AgileQuery -Times 1 -ParameterFilter {
+            $assignee -eq 'tstark'
+        }
+    }
+}

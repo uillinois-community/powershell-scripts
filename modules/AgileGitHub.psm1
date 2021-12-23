@@ -28,6 +28,10 @@ Get-AgileRepos
 function Get-AgileRepos {
     return $ENV:GITHUB_REPOS.split(" ")
 }
+function Get-AgileUser {
+    return $ENV:GITHUB_USERNAME
+}
+
 
 <#
 
@@ -114,6 +118,26 @@ function Invoke-AgileQuery {
         $results += $issues
     }
     return $results
+}
+
+<#
+.SYNOPSIS
+
+Fetch GitHub issues assigned to user set in $ENV:GITHUB_USERNAME
+
+.EXAMPLE
+
+$issues = Get-AgileMine
+$issues[0].updated_at
+$issues[0].html_url
+$issues[0..10] | Show-MarkdownFromGitHub
+
+#>
+function Get-AgileMine {
+    $myself = Get-AgileUser
+    $queries = Get-AgileQuery -Assignee $myself -sort "updated" -direction "Ascending"
+    $issues = Invoke-AgileQuery -queries $queries
+    return $issues
 }
 
 <#
@@ -252,7 +276,31 @@ function Show-AgileByAge {
 <#
 .SYNOPSIS
 
-Display Get-AgileOldIssues results as Markdown.
+Display Get-AgileMine results as Markdown.
+
+.EXAMPLE
+
+Show-AgileMine | Out-File MyIssues.md
+
+.EXAMPLE
+
+Show-AgileMine -DaysAgo 14 | Out-File MyStaleIssues.md
+
+#>
+function Show-AgileMine {
+    param(
+        [int]$DaysAgo = 6
+    )
+    $issues = Get-AgileMine 
+    $issues = $issues | Select-AgileByAge -days_ago $DaysAgo
+    $issues | Show-MarkdownFromGitHub
+}
+
+
+<#
+.SYNOPSIS
+
+Display Get-AgileOldest results as Markdown.
 
 .EXAMPLE
 
@@ -266,6 +314,7 @@ function Show-AgileOldest {
 
 # Export Core Functions
 Export-ModuleMember -Function Get-AgileRepos
+Export-ModuleMember -Function Get-AgileUser
 Export-ModuleMember -Function Get-AgileQuery
 Export-ModuleMember -Function Invoke-AgileQuery
 
@@ -278,3 +327,4 @@ Export-ModuleMember -Function Get-AgileOldest
 Export-ModuleMember -Function Show-AgileToDiscuss
 Export-ModuleMember -Function Show-AgileByAge
 Export-ModuleMember -Function Show-AgileOldest
+Export-ModuleMember -Function Show-AgileMine
