@@ -96,8 +96,18 @@ function Invoke-AgileQueries {
         [hashtable[]]$queries
     )
     $results = @()
+    $repo_count = 0
+    $progress = 0
     $queries | ForEach-Object {
         $query = $_
+
+        # Show progress
+        $repo_count += 1
+        $progress = ($repo_count / $queries.Count) * 100
+        $name = $query.RepositoryName
+        Write-Progress -Activity "Fetching Issues..." -Status $name -PercentComplete $progress
+
+        # Fetch data
         $issues = Get-GitHubIssue @query
         $results += $issues
     }
