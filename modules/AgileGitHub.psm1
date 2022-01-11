@@ -195,17 +195,7 @@ function Select-AgileToDiscuss {
 <#
 .SYNOPSIS
 
-Fetch closed GitHub issues last updated within the given date range.
-
-.EXAMPLE
-
-$issues = Get-AgileByAge -updated 2021-07-01..2021-09-19
-$issues.Count
-
-.EXAMPLE
-
-$issues = Get-AgileByAge -days_ago 14
-$issues.Count
+Filter to closed GitHub issues last updated within the given date range.
 
 #>
 function Select-AgileByAge {
@@ -238,7 +228,41 @@ function Select-AgileByAge {
     }
 }
 
+<#
+.SYNOPSIS
 
+Filter to GitHub issues without a T-Shirt size label.
+
+.DESCRIPTION
+
+Issues labeled with 'Size XS' through 'Size L' are removed by this filter.
+
+Issues labeled with 'Size XL' or 'Size XXL' are kept, as they need split.
+
+#>
+function Select-AgileUnsized {
+    begin {
+        $results = @()
+    }
+    process {
+        if(-Not $_.labels -Contains 'Size XS' -And
+        -Not $_.labels -Contains 'Size S' -And
+        -Not $_.labels -Contains 'Size M' -And
+        -Not $_.labels -Contains 'Size L') {
+            $results += $_
+        }
+    }
+    end {
+        return $results
+    }
+}
+
+function Show-AgileUnsized {
+    $queries = Get-AgileQuery -State 'Open'
+    $issues = Invoke-AgileQuery -queries $queries
+    $issues = $issues | Select-AgileUnsized
+    $issues | Show-MarkdownFromGitHub
+}
 
 <#
 .SYNOPSIS
@@ -330,9 +354,11 @@ Export-ModuleMember -Function Invoke-AgileQuery
 Export-ModuleMember -Function Select-AgileToDiscuss
 Export-ModuleMember -Function Select-AgileByAge
 Export-ModuleMember -Function Get-AgileOldest
+Export-ModuleMember -Function Select-AgileUnsized 
 
 # Export Show- functions.
 Export-ModuleMember -Function Show-AgileToDiscuss
 Export-ModuleMember -Function Show-AgileByAge
 Export-ModuleMember -Function Show-AgileOldest
 Export-ModuleMember -Function Show-AgileMine
+Export-ModuleMember -Function Show-AgileUnsized
