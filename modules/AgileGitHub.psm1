@@ -228,6 +228,40 @@ function Select-AgileByAge {
     }
 }
 
+
+<#
+.SYNOPSIS
+
+Filter GitHub issues for those with an empty milestone field.
+
+#>
+function Select-AgileNoMilestone {
+    begin {
+        $results = @()
+    }
+    process {
+        if($null -eq $_.milestone) {
+         $results += $_
+        }
+    }
+    end {
+        return $results
+    }
+}
+
+<#
+.SYNOPSIS
+
+Show open GitHub issues with no milestone assigned.
+
+#>
+function Show-AgileNoMilestone {
+    $queries = Get-AgileQuery -State 'Open'
+    $issues = Invoke-AgileQuery -queries $queries
+    $issues = $issues | Select-AgileNoMilestone
+    $issues | Show-MarkdownFromGitHub
+}
+
 <#
 .SYNOPSIS
 
@@ -238,6 +272,11 @@ Filter to GitHub issues without a T-Shirt size label.
 Issues labeled with 'Size XS' through 'Size L' are removed by this filter.
 
 Issues labeled with 'Size XL' or 'Size XXL' are kept, as they need split.
+
+Equivalent search in GitHub is:
+
+is:open is:issue -label:'Size M' -label:'Size L' -label:'Size S' -label:'Size XS'
+
 
 #>
 function Select-AgileUnsized {
@@ -256,7 +295,12 @@ function Select-AgileUnsized {
         return $results
     }
 }
+<#
+.SYNOPSIS
 
+Show GitHub issues without a T-Shirt size label.
+
+#>
 function Show-AgileUnsized {
     $queries = Get-AgileQuery -State 'Open'
     $issues = Invoke-AgileQuery -queries $queries
@@ -351,14 +395,16 @@ Export-ModuleMember -Function Get-AgileQuery
 Export-ModuleMember -Function Invoke-AgileQuery
 
 # Export Select- and Get- functions.
-Export-ModuleMember -Function Select-AgileToDiscuss
 Export-ModuleMember -Function Select-AgileByAge
+Export-ModuleMember -Function Select-AgileNoMilestone
 Export-ModuleMember -Function Get-AgileOldest
+Export-ModuleMember -Function Select-AgileToDiscuss
 Export-ModuleMember -Function Select-AgileUnsized 
 
 # Export Show- functions.
-Export-ModuleMember -Function Show-AgileToDiscuss
 Export-ModuleMember -Function Show-AgileByAge
-Export-ModuleMember -Function Show-AgileOldest
 Export-ModuleMember -Function Show-AgileMine
+Export-ModuleMember -Function Show-AgileNoMilestone
+Export-ModuleMember -Function Show-AgileOldest
+Export-ModuleMember -Function Show-AgileToDiscuss
 Export-ModuleMember -Function Show-AgileUnsized

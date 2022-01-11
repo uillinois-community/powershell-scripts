@@ -75,67 +75,6 @@ function Get-GHIssues() {
   return $issues
 }
 
-<#
-.SYNOPSIS
-
-Get GitHub issues that need sized.
-
-.DESCRIPTION
-
-Runs this GitHub search:
-is:open is:issue -label:M -label:L -label:S -label:XL -label:XS 
-
-#>
-function Get-GHUnsized() {
-  $repos = $env:GITHUB_REPOS.split(" ")
-  $issueSearchParams = @{ State = 'open'; OwnerName = $env:GITHUB_ORG }
-  $issues = @()
-  $repos | ForEach-Object { 
-    $issues += Get-GitHubIssue -RepositoryName $_ @issueSearchParams
-  }
-
-  # Ignore issues that have been updated in the last day.
-  $issues = $issues | Where-Object { -Not $_.labels -Contains 'XS' }
-  $issues = $issues | Where-Object { -Not $_.labels -Contains 'S' }
-  $issues = $issues | Where-Object { -Not $_.labels -Contains 'M' }
-  $issues = $issues | Where-Object { -Not $_.labels -Contains 'L' }
-  # Leave XL issues, as they need split.
-
-  return $issues
-}
-
-function Get-GHNoMilestone() {
-  param(
-    [string]$repository
-  )
-  $repos = $env:GITHUB_REPOS.split(" ")
-  if($repository){
-    $repos = @($repository)
-  }
-  $issueSearchParams = @{ State = 'open'; OwnerName = $env:GITHUB_ORG }
-  $issues = @()
-  $repos | ForEach-Object { 
-    $issues += Get-GitHubIssue -RepositoryName $_ @issueSearchParams
-  }
-
-  # Get open issues with empty milestone
-  $issues = $issues | Where-Object { $null -eq $_.milestone }
-  return $issues
-}
-function Show-GHNoMilestone(){
-  param(
-    [string]$repository
-  )
-  Get-GHNoMilestone -Repository $repository | Show-MarkdownFromGitHub
-}
-
-function Show-GHUnsized() {
-  Get-GHUnsized | ForEach-Object {
-    # Markdown output
-    " + [" + $_.Title + " (" + $_.Number + ")](" + $_.html_url + ")" + $_.labels
-  }
-}
-
 function Get-GHByAssignee() {
   $repos = $env:GITHUB_REPOS.split(" ")
   $issueSearchParams = @{ State = 'open'; OwnerName = $env:GITHUB_ORG }
