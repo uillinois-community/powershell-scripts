@@ -74,20 +74,6 @@ function Get-GHIssues() {
 
   return $issues
 }
-
-function Get-GHByAssignee() {
-  $repos = $env:GITHUB_REPOS.split(" ")
-  $issueSearchParams = @{ State = 'open'; OwnerName = $env:GITHUB_ORG }
-  $issues = @()
-  $repos | ForEach-Object { 
-    $issues += Get-GitHubIssue -RepositoryName $_ @issueSearchParams
-  }
-
-  # TODO: Group output by assignee.
-
-  return $issues
-}
-
 <#
 .SYNOPSIS
 

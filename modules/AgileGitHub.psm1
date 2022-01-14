@@ -104,6 +104,16 @@ $issues = Invoke-AgileQuery -queries (Get-AgileQuery -closed)
 ($issues | Measure-Object).Count
 $issues | Show-MarkdownFromGitHub
 
+.EXAMPLE
+
+To output all team member's assigned issues as Markdown.
+
+$team = @('teammate1', 'teammate2', 'teammate3')
+$team | ForEach-Object {
+    "## $_ - Issues Assigned"
+    Get-AgileQuery -Assignee $_ | Invoke-AgileQuery | Show-MarkdownFromGitHub
+}
+
 #>
 function Invoke-AgileQuery {
     param(
