@@ -443,16 +443,20 @@ function Show-AgileStats(){
     $unsized = $open | Select-AgileUnsized
     $unsized_count = ($unsized | Measure-Object).Count
 
+    ""
     "+ Closed Issues this Sprint: $closed_count"
     "+ Count of Unsized Issues: $unsized_count"
     "+ Count of Issues with no milestone: $orphans_count"
 
     if($list) {
-        "## Closed Issues Updated this Sprint (Show-GHClosed)"
+        ""
+        "## Closed Issues Updated this Sprint (Show-AgileClosed)"
         $closed | Show-MarkdownFromGitHub
-        "## Unsized Issues (Show-GHUnsized)"
+        ""
+        "## Unsized Issues (Show-AgileUnsized)"
         $unsized | Show-MarkdownFromGitHub
-        "## Issues with No Milestone"
+        ""
+        "## Issues with No Milestone (Show-AgileNoMilestone)"
         $orphans | Show-MarkdownFromGitHub
     }
 
