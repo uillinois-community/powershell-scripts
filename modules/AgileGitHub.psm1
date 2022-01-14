@@ -112,7 +112,6 @@ function Invoke-AgileQuery {
     )
     Begin {
         $results = @()
-        $repo_count = 0
         $progress = 0
     }
     Process {
@@ -120,8 +119,8 @@ function Invoke-AgileQuery {
             $query = $_
 
             # Show progress
-            $repo_count += 1
-            $progress = ($repo_count / $queries.Count) * 100
+            $progress += 20
+            if($progress -gt 100) { $progress = 0}
             $name = $query.RepositoryName
             Write-Progress -Activity "Fetching Issues..." -Status $name -PercentComplete $progress
 
