@@ -403,6 +403,60 @@ function Show-AgileOldest {
     Get-AgileOldest | Show-MarkdownFromGitHub
 }
 
+<#
+.SYNOPSIS
+
+Output Markdown of some agile sprint statistics.
+
+.DESCRIPTION
+
+Outputs these statistics.
+
+- Closed issues updated in the last two weeks.
+- Count of issues not assigned to any GitHub Milestone.
+- Count of unsized issues across all repositories.
+
+.EXAMPLE
+
+Use the -list flag to also output lists containing each issue in Markdown
+ link format.
+
+Show-AgileStats -list
+
+#>
+function Show-AgileStats(){
+    param(
+        [switch]$list = $false
+    )
+    "## Agile State"
+
+    $qclosed = Get-AgileQuery -state 'Closed'
+    $closed = $qclosed | Invoke-AgileQuery | Select-AgileByAge -days_ago 14
+    $closed_count = ($closed | Measure-Object).Count
+
+    $qopen = Get-AgileQuery -state 'Open'
+    $open = $qopen | Invoke-AgileQuery
+
+    $orphans = $open | Select-AgileNoMilestone
+    $orphans_count = ($orphans | Measure-Object -Property updated_at -Min -Max).Count
+
+    $unsized = $open | Select-AgileUnsized
+    $unsized_count = ($unsized | Measure-Object).Count
+
+    "+ Closed Issues this Sprint: $closed_count"
+    "+ Count of Unsized Issues: $unsized_count"
+    "+ Count of Issues with no milestone: $orphans_count"
+
+    if($list) {
+        "## Closed Issues Updated this Sprint (Show-GHClosed)"
+        $closed | Show-MarkdownFromGitHub
+        "## Unsized Issues (Show-GHUnsized)"
+        $unsized | Show-MarkdownFromGitHub
+        "## Issues with No Milestone"
+        $orphans | Show-MarkdownFromGitHub
+    }
+
+}
 
 # Export Core Functions
 Export-ModuleMember -Function Get-AgileRepos
@@ -422,5 +476,6 @@ Export-ModuleMember -Function Show-AgileByAge
 Export-ModuleMember -Function Show-AgileMine
 Export-ModuleMember -Function Show-AgileNoMilestone
 Export-ModuleMember -Function Show-AgileOldest
+Export-ModuleMember -Function Show-AgileStats
 Export-ModuleMember -Function Show-AgileToDiscuss
 Export-ModuleMember -Function Show-AgileUnsized
