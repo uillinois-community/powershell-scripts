@@ -7,9 +7,8 @@ reliably search all repositories that are of interest to you.
 
 Relies $ENV:GITHUB_REPOS being set in the environment.
 
-.EXAMPLE
-
-$ENV:GITHUB_REPOS = @('org/repo1', 'org2/repo2')
+$ENV:GITHUB_REPOS = @('org/repo1',
+                      'org2/repo2') -join ' '
 
 #>
 
@@ -21,16 +20,39 @@ module.
 
 .EXAMPLE
 
-$ENV:GITHUB_REPOS = @('org/repo1', 'org2/repo2')
-Get-AgileRepos
+$ENV:GITHUB_REPOS = 'org/repo1 org2/repo2'
+Get-AgileRepo
 
 #>
-function Get-AgileRepos {
-    $repos = $ENV:GITHUB_REPOS.split(" ")
-    if(-Not $repos) {
-        Write-Warning "GITHUB_REPOS environment variable is not set."
+function Get-AgileRepo {
+    param(
+        [string]$repos
+    )
+    begin {
+        $results = @()
+        if(-Not $repos){
+            $repos = $ENV:GITHUB_REPOS
+        }
+        if(-Not $repos) {
+            Write-Warning "GITHUB_REPOS environment variable is not set."
+        }
+        $repo_strings = $repos.split(' ')
     }
-    return $repos
+    process {
+        $repo_strings | ForEach-Object {
+            $owner, $repo = $_.split('/')
+            $result = [PSCustomObject]@{
+                OwnerName = $owner
+                RepoName = $repo
+            }
+            if(-Not($skip -contains $repo)){
+                 $results += $result
+            }
+        }
+    }
+    end {
+        return $results
+    }
 }
 function Get-AgileUser {
     $username = $ENV:GITHUB_USERNAME
@@ -63,31 +85,37 @@ $queries | ForEach-Object {
 #>
 function Get-AgileQuery {
     param(
+        [string]$repos,
         [switch]$mine,
         [string]$assignee,
         [string]$sort = "updated",
         [string]$state = 'Open',
         [string]$direction = "Descending"
     )
-    $queries = @()
-    Get-AgileRepos | ForEach-Object {
-        $owner, $repo = $_.split('/')
-        $query = @{
-            OwnerName = $owner
-            RepositoryName = $repo
-            State = $state
-            Sort = $sort
-            Direction = $direction
-        }
+    begin {
+        $queries = @()
+        $repo_list = Get-AgileRepo -repos $repos
         if($mine) {
-            $query['Assignee'] = $ENV:GITHUB_USERNAME
+            $assignee = $ENV:GITHUB_USERNAME
         }
-        if($assignee) {
-            $query['Assignee'] = $assignee
-        }
-        $queries += $query
     }
-    return $queries
+    process {
+        $repo_list | ForEach-Object {
+            $owner_name = $_.OwnerName
+            $repo = $_.RepoName
+            $query = [PSCustomObject]@{
+                OwnerName = $owner_name
+                RepositoryName = $repo
+                State = $state
+                Sort = $sort
+                Direction = $direction
+            }
+            $queries += $query
+        }
+    }
+    end {
+        return $queries
+    }
 }
 
 <#
@@ -118,7 +146,7 @@ $team | ForEach-Object {
 function Invoke-AgileQuery {
     param(
         [Parameter(ValueFromPipeline)]
-        [hashtable[]]$queries
+        $queries
     )
     Begin {
         $results = @()
@@ -133,9 +161,11 @@ function Invoke-AgileQuery {
             if($progress -gt 100) { $progress = 0}
             $name = $query.RepositoryName
             Write-Progress -Activity "Fetching Issues..." -Status $name -PercentComplete $progress
+            $q_hashtable = @{}
+            $query.psobject.properties | Foreach { $q_hashtable[$_.Name] = $_.Value }
 
             # Fetch data
-            $issues = Get-GitHubIssue @query
+            $issues = Get-GitHubIssue @q_hashtable
             $results += $issues
         }
     }
@@ -498,7 +528,7 @@ function Show-AgileClosed {
 }
 
 # Export Core Functions
-Export-ModuleMember -Function Get-AgileRepos
+Export-ModuleMember -Function Get-AgileRepo
 Export-ModuleMember -Function Get-AgileUser
 Export-ModuleMember -Function Get-AgileQuery
 Export-ModuleMember -Function Invoke-AgileQuery

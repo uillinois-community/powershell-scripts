@@ -1,8 +1,30 @@
+Describe 'Get-AgileRepo'  {
+    BeforeAll {
+        # $ENV:GITHUB_REPOS = "org1/repo1 org2/repo2 org2/repo3"
+        $ENV:GITHUB_REPOS = @("org1/repo1", 
+                              "org2/repo2", 
+                              "org2/repo3") -join ' '
+        # equivalent to $ENV:GITHUB_REPOS = "org1/repo1 org2/repo2 org2/repo3"
+    }
+    It 'Returns a list of repositories' {
+        $repos = Get-AgileRepo
+        $repos[0].OwnerName| Should -Be 'org1'
+        $repos[0].RepoName | Should -Be 'repo1'
+        $repos[1].OwnerName| Should -Be 'org2'
+        $repos[1].RepoName | Should -Be 'repo2'
+        $repos[2].OwnerName| Should -Be 'org2'
+        $repos[2].RepoName | Should -Be 'repo3'
+    }
+    It 'Skips requested repositories' {
+        $repos = Get-AgileRepo -repos 'org1/repo1 org2/repo3'
+        $repos[0].OwnerName| Should -Be 'org1'
+        $repos[0].RepoName | Should -Be 'repo1'
+        $repos[1].OwnerName| Should -Be 'org2'
+        $repos[1].RepoName | Should -Be 'repo3'
+    }
+}
 Describe 'Get-AgileQuery' {
     BeforeAll {
-        Mock -CommandName Get-AgileRepos { 
-            return @('org1/repo1', 'org2/repo2')
-        }
         $json = @'
         [
             {
@@ -22,34 +44,29 @@ Describe 'Get-AgileQuery' {
         Mock -CommandName Get-GitHubIssue { return $issues }
     }
 
-    It 'Returns paramaters to find closed issues this sprint' {
-        # Assemble
-        $expected_query_1 = @{
-            OwnerName = 'org1'
-            RepositoryName = 'repo1'
-            State = 'Open'
-        }
-
+    It 'Returns expected queries' {
         # Act
-        $tested = Get-AgileQuery
+        $tested = Get-AgileQuery -repos "org1/repo1 org2/repo2 org2/repo3"
 
         # Assert
-        $tested.Count | Should -Be 2
-        $tested_1 = $tested[0]
+        $tested.Count | Should -Be 3
+        $tested[0].OwnerName | Should -Be 'org1'
+        # $tested_1.RepositoryName | Should -Be 'repo1'
+        # $tested_1.State | Should -Be 'Open'
+    }
+    It 'Allows specifying a repository' {
+        # Act
+        $tested = Get-AgileQuery -repos 'org5/repo5'
 
-        $expected_query_1.Keys | ForEach-Object {
-            $key = $_
-            $tested_1[$key] | Should -Be $expected_query_1[$key]
-        }
+        # Assert
+        $tested[0].OwnerName | Should -Be 'org5'
+        $tested[0].RepositoryName | Should -Be 'repo5'
     }
 }
 
 Describe 'Invoke-AgileQuery' {
     BeforeAll {
         Mock -CommandName Get-GitHubIssue { return $issues }
-        Mock -CommandName Get-AgileRepos { 
-            return @('org1/repo1', 'org2/repo2')
-        }
     }
     It 'Calls Get-GitHubIssue with the expected params.' {
         # Assemble
@@ -78,7 +95,7 @@ Describe 'Invoke-AgileQuery' {
         # Assemble
         $expected_queries = @(
             @{
-                OwnerName = 'org1'
+                OrganizationName = 'org1'
                 RepositoryName = 'repo1'
                 State = 'Open'
                 Sort = 'updated'
@@ -86,7 +103,7 @@ Describe 'Invoke-AgileQuery' {
                 Assignee = 'tstark'
             },
             @{
-                OwnerName = 'org2'
+                OrganizationName = 'org2'
                 RepositoryName = 'repo2'
                 State = 'Open'
                 Sort = 'updated'
@@ -96,7 +113,7 @@ Describe 'Invoke-AgileQuery' {
         )
 
         # Act
-        $queries = Get-AgileQuery -Assignee tstark
+        $queries = Get-AgileQuery -Assignee tstark -repos 'org1/repo1 org2/repo2'
 
         # Assert
         $queries.Count | Should -Be 2
