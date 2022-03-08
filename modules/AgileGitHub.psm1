@@ -421,7 +421,12 @@ function Show-AgileOldest {
         [string]$updated,
         [int]$days_ago
     )
-    Get-AgileOldest | Select-AgileByAge -days_ago $days_ago -updated $updated | Show-MarkdownFromGitHub
+    if($updated -Or $days_ago){
+        Get-AgileOldest | Select-AgileByAge -days_ago $days_ago -updated $updated | Show-MarkdownFromGitHub
+    }
+    else {
+        Get-AgileOldest | Show-MarkdownFromGitHub
+    }
 }
 
 <#
