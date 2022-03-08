@@ -213,6 +213,11 @@ function Select-AgileToDiscuss {
 
 Filter to closed GitHub issues last updated within the given date range.
 
+.EXAMPLE
+
+$qclosed = Get-AgileQuery -state 'Closed'
+$closed = $qclosed | Invoke-AgileQuery | Select-AgileByAge -days_ago $days_ago
+
 #>
 function Select-AgileByAge {
     param(
@@ -398,9 +403,25 @@ Display Get-AgileOldest results as Markdown.
 
 Show-AgileOldest | Out-File OldestIssues.md
 
+.EXAMPLE
+
+Show issues last updated in 2021.
+
+Show-AgileOldest -updated 2021.01.01..2021.12.30
+
+.EXAMPLE
+
+Show issues, oldest first, updated in the last 60 days.
+
+Show-AgileOldest -days_ago 60
+
 #>
 function Show-AgileOldest {
-    Get-AgileOldest | Show-MarkdownFromGitHub
+    param(
+        [string]$updated,
+        [int]$days_ago
+    )
+    Get-AgileOldest | Select-AgileByAge -days_ago $days_ago -updated $updated | Show-MarkdownFromGitHub
 }
 
 <#
