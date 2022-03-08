@@ -462,6 +462,15 @@ function Show-AgileStats(){
 
 }
 
+function Show-AgileClosed {
+    param(
+        [int]$days_ago = 14
+    )
+    $qclosed = Get-AgileQuery -state 'Closed'
+    $closed = $qclosed | Invoke-AgileQuery | Select-AgileByAge -days_ago $days_ago
+    $closed | Show-MarkdownFromGitHub
+}
+
 # Export Core Functions
 Export-ModuleMember -Function Get-AgileRepos
 Export-ModuleMember -Function Get-AgileUser
@@ -483,3 +492,4 @@ Export-ModuleMember -Function Show-AgileOldest
 Export-ModuleMember -Function Show-AgileStats
 Export-ModuleMember -Function Show-AgileToDiscuss
 Export-ModuleMember -Function Show-AgileUnsized
+Export-ModuleMember -Function Show-AgileClosed
