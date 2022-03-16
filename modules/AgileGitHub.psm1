@@ -164,6 +164,9 @@ function Invoke-AgileQuery {
             Write-Progress -Activity "Fetching Issues..." -Status $name -PercentComplete $progress
             $q_hashtable = @{}
             $query.psobject.properties | Foreach { $q_hashtable[$_.Name] = $_.Value }
+            if(-Not $q_hashtable['Assignee']) {
+                $q_hashtable.remove('Assignee')
+            }
 
             # Fetch data
             $issues = Get-GitHubIssue @q_hashtable

@@ -67,18 +67,21 @@ Describe 'Invoke-AgileQuery' {
         $issues = $json | ConvertFrom-Json
         Mock -CommandName Get-GitHubIssue { return $issues }
     }
-    It 'Calls Get-GitHubIssue with the expected params.' {
+
+    It 'Calls Get-GitHubIssue once per repo' {
         # Assemble
         $queries = @(
             [PSCustomObject]@{
                 OwnerName = 'org1'
                 RepositoryName = 'repo1'
                 State = 'Closed'
+                Assignee = $null
             },
             [PSCustomObject]@{
                 OwnerName = 'org2'
                 RepositoryName = 'repo2'
                 State = 'Closed'
+                Assignee = $null
             }
         )
 
@@ -87,9 +90,33 @@ Describe 'Invoke-AgileQuery' {
 
         # Asset
         Should -Invoke -CommandName Get-GitHubIssue -Times 2
-
     }
 
+    It 'Calls Get-GitHubIssue without Assignee if blank' {
+        # Assemble
+        $queries = @(
+            [PSCustomObject]@{
+                OwnerName = 'org1'
+                RepositoryName = 'repo1'
+                State = 'Closed'
+                Assignee = $null
+            }
+        )
+
+        # Act
+        Invoke-AgileQuery -Queries $queries
+
+        # Asset
+        Should -Invoke -CommandName Get-GitHubIssue -Times 1 -ParameterFilter { 
+            $OwnerName -eq 'org1'
+        }
+        Should -Invoke -CommandName Get-GitHubIssue -Times 1 -ParameterFilter { 
+            $RepositoryName -eq 'repo1'
+        }
+        Should -Not -Invoke -CommandName Get-GitHubIssue -Times 1 -ParameterFilter { 
+            $Assignee -eq $null
+        }
+    }
 
 }
 
