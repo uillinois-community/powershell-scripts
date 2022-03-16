@@ -25,6 +25,30 @@ Describe 'Get-AgileRepo'  {
 }
 Describe 'Get-AgileQuery' {
     BeforeAll {
+        Mock -CommandName Get-GitHubIssue { return $issues }
+    }
+
+    It 'Returns expected queries' {
+        # Act
+        $tested = Get-AgileQuery -repos "org1/repo1 org2/repo2 org2/repo3"
+
+        # Assert
+        $tested.Count | Should -Be 3
+        $tested[0].OwnerName | Should -Be 'org1'
+    }
+    It 'Sets Assignee' {
+        # Act
+        $tested = Get-AgileQuery -repos 'org5/repo5' -assignee tstark
+
+        # Assert
+        $tested[0].OwnerName | Should -Be 'org5'
+        $tested[0].RepositoryName | Should -Be 'repo5'
+        $tested[0].Assignee | Should -Be 'tstark'
+    }
+}
+
+Describe 'Invoke-AgileQuery' {
+    BeforeAll {
         $json = @'
         [
             {
@@ -43,40 +67,15 @@ Describe 'Get-AgileQuery' {
         $issues = $json | ConvertFrom-Json
         Mock -CommandName Get-GitHubIssue { return $issues }
     }
-
-    It 'Returns expected queries' {
-        # Act
-        $tested = Get-AgileQuery -repos "org1/repo1 org2/repo2 org2/repo3"
-
-        # Assert
-        $tested.Count | Should -Be 3
-        $tested[0].OwnerName | Should -Be 'org1'
-        # $tested_1.RepositoryName | Should -Be 'repo1'
-        # $tested_1.State | Should -Be 'Open'
-    }
-    It 'Allows specifying a repository' {
-        # Act
-        $tested = Get-AgileQuery -repos 'org5/repo5'
-
-        # Assert
-        $tested[0].OwnerName | Should -Be 'org5'
-        $tested[0].RepositoryName | Should -Be 'repo5'
-    }
-}
-
-Describe 'Invoke-AgileQuery' {
-    BeforeAll {
-        Mock -CommandName Get-GitHubIssue { return $issues }
-    }
     It 'Calls Get-GitHubIssue with the expected params.' {
         # Assemble
         $queries = @(
-            @{
+            [PSCustomObject]@{
                 OwnerName = 'org1'
                 RepositoryName = 'repo1'
                 State = 'Closed'
             },
-            @{
+            [PSCustomObject]@{
                 OwnerName = 'org2'
                 RepositoryName = 'repo2'
                 State = 'Closed'
@@ -91,37 +90,6 @@ Describe 'Invoke-AgileQuery' {
 
     }
 
-    It 'Sets Assignee' {
-        # Assemble
-        $expected_queries = @(
-            @{
-                OrganizationName = 'org1'
-                RepositoryName = 'repo1'
-                State = 'Open'
-                Sort = 'updated'
-                Direction = 'Descending'
-                Assignee = 'tstark'
-            },
-            @{
-                OrganizationName = 'org2'
-                RepositoryName = 'repo2'
-                State = 'Open'
-                Sort = 'updated'
-                Direction = 'Descending'
-                Assignee = 'tstark'
-            }
-        )
-
-        # Act
-        $queries = Get-AgileQuery -Assignee tstark -repos 'org1/repo1 org2/repo2'
-
-        # Assert
-        $queries.Count | Should -Be 2
-        $expected_queries.Keys | ForEach-Object {
-            $queries[$_] | Should -Be $expected_queries[$_]
-        }
-
-    }
 
 }
 

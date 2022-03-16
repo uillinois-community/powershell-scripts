@@ -86,8 +86,8 @@ $queries | ForEach-Object {
 function Get-AgileQuery {
     param(
         [string]$repos,
-        [switch]$mine,
         [string]$assignee,
+        [switch]$mine,
         [string]$sort = "updated",
         [string]$state = 'Open',
         [string]$direction = "Descending"
@@ -109,6 +109,7 @@ function Get-AgileQuery {
                 State = $state
                 Sort = $sort
                 Direction = $direction
+                Assignee = $assignee
             }
             $queries += $query
         }
