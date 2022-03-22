@@ -192,8 +192,11 @@ $issues[0..10] | Show-MarkdownFromGitHub
 
 #>
 function Get-AgileMine {
+    param(
+        [string]$repos
+    )
     $myself = Get-AgileUser
-    $queries = Get-AgileQuery -Assignee $myself -sort "updated" -direction "Ascending"
+    $queries = Get-AgileQuery -Assignee $myself -sort "updated" -direction "Ascending" -repos $repos
     $issues = Invoke-AgileQuery -queries $queries
     return $issues
 }
@@ -420,10 +423,15 @@ Show-AgileMine -DaysAgo 14 | Out-File MyStaleIssues.md
 #>
 function Show-AgileMine {
     param(
-        [int]$DaysAgo = 6
+        [string]$repos,
+        [int]$DaysAgo = -1
     )
-    $issues = Get-AgileMine 
-    $issues = $issues | Select-AgileByAge -days_ago $DaysAgo
+    $my_issues = Get-AgileMine -repos $repos
+    if($DaysAgo -eq -1) {
+        $issues = $my_issues
+    } else {
+        $issues = $my_issues | Select-AgileByAge -days_ago $DaysAgo
+    }
     $issues | Show-MarkdownFromGitHub
 }
 
@@ -539,8 +547,9 @@ Export-ModuleMember -Function Invoke-AgileQuery
 
 # Export Select- and Get- functions.
 Export-ModuleMember -Function Select-AgileByAge
-Export-ModuleMember -Function Select-AgileNoMilestone
+Export-ModuleMember -Function Get-AgileMine
 Export-ModuleMember -Function Get-AgileOldest
+Export-ModuleMember -Function Select-AgileNoMilestone
 Export-ModuleMember -Function Select-AgileToDiscuss
 Export-ModuleMember -Function Select-AgileUnsized 
 
