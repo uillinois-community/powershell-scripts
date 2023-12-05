@@ -310,19 +310,6 @@ function Select-AgileNoMilestone {
 <#
 .SYNOPSIS
 
-Show open GitHub issues with no milestone assigned.
-
-#>
-function Show-AgileNoMilestone {
-    $queries = Get-AgileQuery -State 'Open'
-    $issues = Invoke-AgileQuery -queries $queries
-    $issues = $issues | Select-AgileNoMilestone
-    $issues | Show-MarkdownFromGitHub
-}
-
-<#
-.SYNOPSIS
-
 Filter to GitHub issues without a T-Shirt size label.
 
 .DESCRIPTION
@@ -556,7 +543,6 @@ Export-ModuleMember -Function Select-AgileUnsized
 # Export Show- functions.
 Export-ModuleMember -Function Show-AgileByAge
 Export-ModuleMember -Function Show-AgileMine
-Export-ModuleMember -Function Show-AgileNoMilestone
 Export-ModuleMember -Function Show-AgileOldest
 Export-ModuleMember -Function Show-AgileStats
 Export-ModuleMember -Function Show-AgileToDiscuss

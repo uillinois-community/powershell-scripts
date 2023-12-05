@@ -50,3 +50,8 @@ function Invoke-AgileCloneAll {
 }
 Export-ModuleMember -Function Invoke-AgileCmd
 Export-ModuleMember -Function Invoke-AgileCloneAll
+
+
+function Show-AgileNoMilestone() {
+	Invoke-AgileCmd "gh issue list -S 'is:open is:issue no:milestone'"
+}
