@@ -22,6 +22,7 @@ function Invoke-AgileCmd {
 		$folder = $_.split('/')[1]
         $repo_path = "$env:GITHUB_CLONE_PATH/$folder" 
         cd $repo_path
+        Write-Host "$_"
 		Invoke-Expression $gh_command
     }
 }
