@@ -2,11 +2,12 @@
 
 ## About
 
-This library provides a set of opinionated commands that perform common
- agile searches using GitHub CLI.
+This library provides a set of opinionated commands that perform common agile searches using GitHub CLI.
 
 I have had trouble keeping `PowerShellForGitHub` working, so
 I am gradually migrating functionality from `AgileGitHub.psm1`, which relies on `PowerShellForGitHub` into this repository, which does not.
+
+A drawback of this approach is that the output of GitHub CLI is nice for printing to the screen, but requires a tool like `awk` to parse.
 
 ## Core Functionality
 
