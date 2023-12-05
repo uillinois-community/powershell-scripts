@@ -55,3 +55,12 @@ The `Invoke-AgileQuery` command helps conveniently invoke a set of queries
 
 [23]: https://github.com/microsoft/PowerShellForGitHub
 
+## Interesting Commands
+
+- List all open issues with label 'bug' in all configured repositories
+
+    `Invoke-AgileCmd "gh issue list -S 'label:bug'"`
+
+- List all open issues with no milestone
+
+    `Invoke-AgileCmd "gh issue list -S 'is:open is:issue no:milestone'"`

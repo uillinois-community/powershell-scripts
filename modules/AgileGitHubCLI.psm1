@@ -1,5 +1,9 @@
 <#
 
+.SYNOPSIS
+
+Invoke a GitHub CLI command in every repository configured in $env:GITHUB_REPOS
+
 .DESCRIPTION
 
 Invoke a GitHub CLI command in every repository configured in $env:GITHUB_REPOS
@@ -51,9 +55,3 @@ function Invoke-AgileCloneAll {
 }
 Export-ModuleMember -Function Invoke-AgileCmd
 Export-ModuleMember -Function Invoke-AgileCloneAll
-
-
-function Show-AgileNoMilestone() {
-	Invoke-AgileCmd "gh issue list -S 'is:open is:issue no:milestone'"
-}
-Export-ModuleMember -Function Show-AgileNoMilestone
