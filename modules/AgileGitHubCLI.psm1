@@ -34,6 +34,84 @@ Export-ModuleMember -Function Invoke-AgileCmd
 
 <#
 
+.SYNOPSIS
+
+Invoke a GitHub CLI command outputing .json files for every repository
+configured in $env:GITHUB_REPOS
+
+.DESCRIPTION
+
+Invoke a GitHub CLI command outputing .json files for every repository
+configured in $env:GITHUB_REPOS
+
+See https://cli.github.com/manual/
+
+Be sure to set $env:GITHUB_CLONE_PATH and $GITHUB_REPORS,
+and run Invoke-AgileCloneAll first.
+
+.PARAMETER gh_command
+
+A valid GitHub CLI command, such as `gh issue list`
+
+.PARAMETER destination
+
+The folder to save the created files.
+
+.PARAMETER filename
+
+A filename hint for the created files. Each repository name will also be included.
+
+.PARAMETER ext
+
+The extension for the created files. Defaults to `.json`
+
+.EXAMPLE
+
+Write-AgileToFile 'gh issue list --state closed --json title,milestone,closedAt'
+
+Afterwards, the .json files can be used with typical PowerShell commands:
+
+cat ~\data\gh_issues.example.json | ConvertFrom-Json |Format-Table
+
+#>
+function Write-AgileToFile { 
+    param(
+        [string]$gh_command='gh issue list --state closed --json title,closedAt,url',
+        [string]$data_dir="$HOME/data",
+        [string]$filename='gh_issues',
+        [string]$ext='.json'
+    )
+    $env:GITHUB_REPOS.split(' ') | ForEach-Object {
+		$folder = $_.split('/')[1]
+        $repo_path = "$env:GITHUB_CLONE_PATH/$folder" 
+        cd $repo_path
+        $fileToWrite = "$destination/$filename.$folder.$ext"
+        Write-Host "Writing $gh_command to $fileToWrite"
+		Invoke-Expression $gh_command > $fileToWrite
+    }
+}
+Export-ModuleMember -Function Write-AgileToFile
+
+function Get-AgileDataFromJsonFiles {
+    param(
+        [string]$data_dir="$HOME/data",
+        [string]$filename='gh_issues',
+        [string]$ext='.json'
+    )
+    $fullData = @{}
+    $env:GITHUB_REPOS.split(' ') | ForEach-Object {
+		$folder = $_.split('/')[1]
+        $destination="$HOME/data"
+        $getFromFile = "$destination/$filename.$folder.$ext"
+        $data = Get-Content $getFromFile | ConvertFrom-Json -AsHashtable
+        $fullData = $fullData + $data
+    }
+    return $fullData
+}
+Export-ModuleMember -Function Get-AgileDataFromJsonFiles
+
+<#
+
 .DESCRIPTION
 
 Invoke a GitHub CLI command in every repository configured in $env:GITHUB_REPOS
