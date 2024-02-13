@@ -92,6 +92,7 @@ function Write-AgileToFile {
 }
 Export-ModuleMember -Function Write-AgileToFile
 
+<#
 function Get-AgileDataFromJsonFiles {
     param(
         [string]$data_dir="$HOME/data",
@@ -109,6 +110,7 @@ function Get-AgileDataFromJsonFiles {
     return $fullData
 }
 Export-ModuleMember -Function Get-AgileDataFromJsonFiles
+#>
 
 <#
 
