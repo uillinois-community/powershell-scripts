@@ -76,41 +76,21 @@ cat ~\data\gh_issues.example.json | ConvertFrom-Json |Format-Table
 #>
 function Write-AgileToFile { 
     param(
-        [string]$gh_command='gh issue list --state closed --json title,closedAt,url',
+        [string]$gh_command='gh issue list --limit 1000 --state closed --json title,closedAt,url',
         [string]$data_dir="$HOME/data",
         [string]$filename='gh_issues',
-        [string]$ext='.json'
+        [string]$ext='json'
     )
     $env:GITHUB_REPOS.split(' ') | ForEach-Object {
 		$folder = $_.split('/')[1]
         $repo_path = "$env:GITHUB_CLONE_PATH/$folder" 
         cd $repo_path
-        $fileToWrite = "$destination/$filename.$folder.$ext"
+        $fileToWrite = "$data_dir/$filename.$folder.$ext"
         Write-Host "Writing $gh_command to $fileToWrite"
 		Invoke-Expression $gh_command > $fileToWrite
     }
 }
 Export-ModuleMember -Function Write-AgileToFile
-
-<#
-function Get-AgileDataFromJsonFiles {
-    param(
-        [string]$data_dir="$HOME/data",
-        [string]$filename='gh_issues',
-        [string]$ext='.json'
-    )
-    $fullData = @{}
-    $env:GITHUB_REPOS.split(' ') | ForEach-Object {
-		$folder = $_.split('/')[1]
-        $destination="$HOME/data"
-        $getFromFile = "$destination/$filename.$folder.$ext"
-        $data = Get-Content $getFromFile | ConvertFrom-Json -AsHashtable
-        $fullData = $fullData + $data
-    }
-    return $fullData
-}
-Export-ModuleMember -Function Get-AgileDataFromJsonFiles
-#>
 
 <#
 
