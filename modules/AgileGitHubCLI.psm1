@@ -76,7 +76,7 @@ cat ~\data\gh_issues.example.json | ConvertFrom-Json |Format-Table
 #>
 function Write-AgileToFile { 
     param(
-        [string]$gh_command="gh issue list --limit 1000 --search 'closed:2023-01-01..2024-01-01' --state closed --json title,closedAt,url,milestone",
+        [string]$gh_command="gh issue list --limit 1000 --search 'closed:2023-01-01..2024-01-01 -reason:not+planned' --state closed --json title,closedAt,url,milestone",
         [string]$data_dir="$HOME/data",
         [string]$filename='gh_issues',
         [string]$ext='json'
