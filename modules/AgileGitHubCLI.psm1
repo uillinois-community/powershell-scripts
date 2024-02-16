@@ -77,8 +77,6 @@ cat ~\data\gh_issues.example.json | ConvertFrom-Json |Format-Table
 function Write-AgileToFile { 
     param(
         [string]$gh_command="gh issue list --limit 1000 --search 'closed:2023-01-01..2024-01-01 -reason:not+planned' --state closed --json title,closedAt,url,milestone",
-        [string]$cols='title,closedAt,url,milestone',
-        [string]$year=2024,
         [string]$data_dir="$HOME/data",
         [string]$filename='gh_issues',
         [string]$ext='json'
@@ -88,7 +86,7 @@ function Write-AgileToFile {
 		$folder = $_.split('/')[1]
         $repo_path = "$env:GITHUB_CLONE_PATH/$folder" 
         cd $repo_path
-        $fileToWrite = "$data_dir/$filename.$year.$folder.$ext"
+        $fileToWrite = "$data_dir/$filename.$folder.$ext"
         Write-Host "Writing $gh_command to $fileToWrite"
 		Invoke-Expression $gh_command > $fileToWrite
     }
