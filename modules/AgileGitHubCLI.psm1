@@ -99,8 +99,8 @@ function Write-AgileClosedIssuesToFile {
         [int]$limit=1000,
         [string]$data_dir="$HOME/data"
     )
-    $lastyear = $year - 1
-    $search = "closed:$lastyear-01-01..$year-01-01 -reason:not+planned"
+    $nextyear = $year + 1
+    $search = "closed:$year-01-01..$nextyear-01-01 -reason:not+planned"
     $gh_command="gh issue list --limit $limit --search '$search' --state closed --json $cols"
     Write-AgileToFile -gh_command $gh_command -data_dir $data_dir -filename "gh_issues.$year"
 }
