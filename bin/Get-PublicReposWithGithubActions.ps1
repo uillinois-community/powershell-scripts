@@ -4,10 +4,7 @@
 
  .Description
   Gets repositories that are public that have a .github/workflow directory in the default branch.
-   Expectes  a Github finge-grained token that has access 
-  to all repositories in the organization for the Metadata permission stored in environment variable GITHUB_PS_TOKEN.
 
-  At this time
 
  .Parameter OrganizationName
   Name of the Github organization.
