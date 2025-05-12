@@ -95,14 +95,15 @@ Export-ModuleMember -Function Write-AgileToFile
 function Write-AgileClosedIssuesToFile {
     param(
         [string]$cols='title,closedAt,url,milestone',
-        [string]$year=2024,
+        [string]$fiscal_year=2025,
         [int]$limit=1000,
         [string]$data_dir="$HOME/data"
     )
-    $nextyear = $year + 1
-    $search = "closed:$year-01-01..$nextyear-01-01 -reason:not+planned"
+    $year = $fiscal_year
+    $lastyear = $year - 1
+    $search = "closed:$lastyear-06-01..$year-06-01 -reason:not+planned"
     $gh_command="gh issue list --limit $limit --search '$search' --state closed --json $cols"
-    Write-AgileToFile -gh_command $gh_command -data_dir $data_dir -filename "gh_issues.$year"
+    Write-AgileToFile -gh_command $gh_command -data_dir $data_dir -filename "gh_issues.fy$year"
 }
 Export-ModuleMember -Function Write-AgileClosedIssuesToFile
 
